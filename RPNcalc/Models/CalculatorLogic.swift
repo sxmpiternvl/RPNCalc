@@ -80,12 +80,21 @@ class CalculatorLogic {
         case .undefined, .empty, .result(_):
             state = .normal(ButtonTitle.zero.rawValue + ButtonTitle.decimalSeparator.rawValue)
         case .normal(let expr):
-            if !expr.contains(ButtonTitle.decimalSeparator.rawValue) {
-                if let last = expr.last, last == "(" || ((ButtonTitle(rawValue: String(last))?.isOperator) == true) {
-                    state = .normal(expr + ButtonTitle.zero.rawValue + ButtonTitle.decimalSeparator.rawValue)
-                } else {
-                    state = .normal(expr + ButtonTitle.decimalSeparator.rawValue)
+            if let last = expr.last, last == "(" || ((ButtonTitle(rawValue: String(last))?.isOperator) == true) {
+                state = .normal(expr + ButtonTitle.zero.rawValue + ButtonTitle.decimalSeparator.rawValue)
+            } else {
+                var currentNumber = ""
+                for char in expr.reversed() {
+                    if char.isNumber || String(char) == ButtonTitle.decimalSeparator.rawValue {
+                        currentNumber.append(char)
+                    } else {
+                        break
+                    }
                 }
+                if currentNumber.contains(ButtonTitle.decimalSeparator.rawValue) {
+                    return
+                }
+                state = .normal(expr + ButtonTitle.decimalSeparator.rawValue)
             }
         }
     }
@@ -230,30 +239,3 @@ class CalculatorLogic {
     }
     
 }
-
-
-
-
-
-
-
-
-
-//// MARK: - evaluate
-//private func evaluateExpression() {
-//    guard case .normal(let expr) = state else { return }
-//    guard expr.filter({ $0.isNumber }).count >= 2 else { return }
-//    var expressionToEvaluate = expr
-//    if let last = expressionToEvaluate.last, ButtonTitle(rawValue: String(last))?.isOperator == true {
-//        expressionToEvaluate.removeLast()
-//    }
-//    if openParenthesisCount > 0 {
-//        expressionToEvaluate.append(String(repeating: ButtonTitle.closeParenthesis.rawValue, count: openParenthesisCount))
-//        openParenthesisCount = 0
-//    }
-//    print("Infix expression: \(expressionToEvaluate)")
-//    let replaced = replaceSigns(expressionToEvaluate)
-//    let rpn = RPNConverter.infixToRPN(replaced)
-//    let resultVal = RPNEvaluator.evaluate(rpn)
-//    state = resultVal.isNaN == true ? .undefined : .result(stringFromRoundedNumber(resultVal, toPlaces: 8))
-//}

@@ -1,5 +1,10 @@
 import UIKit
+
 class CalculatorView: UIView {
+    
+    var dynamicClearButton: UIButton?
+    
+    private var isDarkMode = false
     
     let buttonTitles: [[String]] = [
         ["AC", "(", ")", "÷"],
@@ -43,17 +48,25 @@ class CalculatorView: UIView {
         stack.axis = .vertical
         stack.alignment = .fill
         stack.distribution = .fillEqually
-        stack.spacing = 10
+        stack.spacing = 18
         return stack
     }()
     
-    var dynamicClearButton: UIButton?
+    private let themeButton: UIButton = {
+        let button = UIButton(type: .system)
+        let image = UIImage(systemName: "lightbulb")
+        button.setImage(image, for: .normal)
+        button.tintColor = .white
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupViews()
         setupConstraints()
         setupButtons()
+        setupThemeButton()
     }
     
     required init?(coder: NSCoder) {
@@ -69,30 +82,28 @@ class CalculatorView: UIView {
     }
     
     private func setupConstraints() {
-        NSLayoutConstraint.activate([
-            mainStack.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: 20),
-            mainStack.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20),
-            mainStack.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -20),
-            mainStack.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -20)
-        ])
+        mainStack.setConstraint(.top, toGuide: self.safeAreaLayoutGuide, constant: 20)
+        mainStack.setConstraint(.leading, toView: self, constant: 20)
+        mainStack.setConstraint(.trailing, toView: self, constant: -20)
+        mainStack.setConstraint(.bottom, toGuide: self.safeAreaLayoutGuide, constant: -20)
         
         let displayHeightConstraint = displayScrollView.heightAnchor.constraint(equalTo: mainStack.heightAnchor, multiplier: 0.45)
         displayHeightConstraint.isActive = true
         
-        NSLayoutConstraint.activate([
-            displayContainer.topAnchor.constraint(equalTo: displayScrollView.contentLayoutGuide.topAnchor),
-            displayContainer.bottomAnchor.constraint(equalTo: displayScrollView.contentLayoutGuide.bottomAnchor),
-            displayContainer.leadingAnchor.constraint(equalTo: displayScrollView.contentLayoutGuide.leadingAnchor),
-            displayContainer.trailingAnchor.constraint(equalTo: displayScrollView.contentLayoutGuide.trailingAnchor),
-            displayContainer.heightAnchor.constraint(equalTo: displayScrollView.frameLayoutGuide.heightAnchor),
-            displayContainer.widthAnchor.constraint(greaterThanOrEqualTo: displayScrollView.frameLayoutGuide.widthAnchor)
-        ])
-        NSLayoutConstraint.activate([
-            displayLabel.bottomAnchor.constraint(equalTo: displayContainer.bottomAnchor, constant: -16),
-            displayLabel.leadingAnchor.constraint(equalTo: displayContainer.leadingAnchor, constant: 16),
-            displayLabel.trailingAnchor.constraint(equalTo: displayContainer.trailingAnchor, constant: -16)
-        ])
+        displayContainer.setConstraint(.top, toGuide: displayScrollView.contentLayoutGuide)
+        displayContainer.setConstraint(.bottom, toGuide: displayScrollView.contentLayoutGuide)
+        displayContainer.setConstraint(.leading, toGuide: displayScrollView.contentLayoutGuide)
+        displayContainer.setConstraint(.trailing, toGuide: displayScrollView.contentLayoutGuide)
+        
+        displayContainer.heightAnchor.constraint(equalTo: displayScrollView.frameLayoutGuide.heightAnchor).isActive = true
+        displayContainer.widthAnchor.constraint(greaterThanOrEqualTo: displayScrollView.frameLayoutGuide.widthAnchor).isActive = true
+        
+        displayLabel.setConstraint(.bottom, toView: displayContainer, constant: -16)
+        displayLabel.setConstraint(.leading, toView: displayContainer, constant: 16)
+        displayLabel.setConstraint(.trailing, toView: displayContainer, constant: -16)
     }
+    
+    //MARK: Buttons Row
     
     private func setupButtons() {
         buttonTitles.forEach { row in
@@ -100,14 +111,14 @@ class CalculatorView: UIView {
             buttonsContainer.addArrangedSubview(rowStack)
         }
     }
-
+    
     private func createButtonRow(_ titles: [String]) -> UIStackView {
         let rowStack = UIStackView()
         rowStack.axis = .horizontal
-        rowStack.spacing = 10
+        rowStack.spacing = 18
         rowStack.alignment = .fill
         rowStack.distribution = .fillEqually
-
+        
         titles.forEach { title in
             let button = createButton(title)
             if (title == "AC" || title == "⌫") && dynamicClearButton == nil {
@@ -117,24 +128,53 @@ class CalculatorView: UIView {
         }
         return rowStack
     }
-
+    
+    //MARK: Create Buttons
     private func createButton(_ title: String) -> UIButton {
         let button = UIButton(type: .system)
         button.setTitle(title, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 28, weight: .bold)
-        button.layer.cornerRadius = 30
+        button.layer.cornerRadius = 20
         
         switch title {
-        case "+", "-", "×", "÷", "=":
-            button.backgroundColor = .systemPink
+        case "+", "-", "×", "÷", "^":
+            button.backgroundColor = .operationsBackground
+            button.setTitleColor(.buttonOperation, for: .normal)
         case "(", ")", "AC", "⌫":
-            button.backgroundColor = .darkGray
+            button.backgroundColor = .aCcolor
+            button.setTitleColor(.aCtext, for: .normal)
+        case "=":
+            button.backgroundColor = .equalsBackground
+            button.setTitleColor(.white, for: .normal)
         default:
-            button.backgroundColor = .gray
+            button.backgroundColor = .buttonsBackground
+            button.setTitleColor(.buttonLabel, for: .normal)
         }
         
-        button.setTitleColor(.orange, for: .normal)
         return button
     }
     
+    // MARK: Theme Button
+    private func setupThemeButton() {
+        addSubview(themeButton)
+        
+        themeButton.setConstraint(.top, toGuide: self.safeAreaLayoutGuide, constant: 30)
+        themeButton.setConstraint(.leading, toView: self, constant: 30)
+        
+        themeButton.addTarget(self, action: #selector(toggleTheme), for: .touchUpInside)
+    }
+    
+    @objc private func toggleTheme() {
+        isDarkMode.toggle()
+        let newStyle: UIUserInterfaceStyle = isDarkMode ? .dark : .light
+        guard let window = window else { return }
+        UIView.transition(with: window,
+                          duration: 0.5,
+                          options: .transitionCrossDissolve,
+                          animations: {
+            window.overrideUserInterfaceStyle = newStyle
+        }, completion: nil)
+    }
+
 }
+//
