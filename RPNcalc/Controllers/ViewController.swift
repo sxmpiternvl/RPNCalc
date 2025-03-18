@@ -1,7 +1,7 @@
 import UIKit
 
 class ViewController: UIViewController {
-
+    
     private let calculatorView = CalculatorView()
     private let logic = CalculatorLogic()
     
@@ -36,11 +36,11 @@ class ViewController: UIViewController {
             button.addTarget(self, action: #selector(buttonTapped(_:)), for: .touchUpInside)
         }
     }
-
+    
     
     @objc func buttonTapped(_ sender: UIButton) {
         guard let title = sender.currentTitle,
-        let button = ButtonTitle(rawValue: title) else { return }
+              let button = ButtonTitle(rawValue: title) else { return }
         logic.handleInput(button)
         updateDisplay()
     }
@@ -66,18 +66,19 @@ class ViewController: UIViewController {
         calculatorView.displayLabel.attributedText = attributedText
         updateClearButtonTitle()
         view.layoutIfNeeded()
+        
         let maxOffsetX = max(0, calculatorView.displayScrollView.contentSize.width - calculatorView.displayScrollView.bounds.width)
         calculatorView.displayScrollView.setContentOffset(CGPoint(x: maxOffsetX, y: 0), animated: false)
     }
     
     private func updateClearButtonTitle() {
-    switch logic.state {
-    case .undefined, .empty, .result(_):
-        calculatorView.dynamicClearButton?.setTitle("AC", for: .normal)
-    case .normal(_):
-        calculatorView.dynamicClearButton?.setTitle("⌫", for: .normal)
+        switch logic.state {
+        case .undefined, .empty, .result(_):
+            calculatorView.dynamicClearButton?.setTitle("AC", for: .normal)
+        case .normal(_):
+            calculatorView.dynamicClearButton?.setTitle("⌫", for: .normal)
+        }
     }
-}
- 
+    
 }
 

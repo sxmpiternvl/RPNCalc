@@ -17,6 +17,7 @@ class CalculatorView: UIView {
     private let mainStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
+        stack.spacing = 20
         stack.alignment = .fill
         stack.translatesAutoresizingMaskIntoConstraints = false
         return stack
@@ -29,7 +30,7 @@ class CalculatorView: UIView {
         return scrollView
     }()
     
-    private let displayContainer: UIView = {
+    private let displayLabelContainer: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
@@ -45,10 +46,14 @@ class CalculatorView: UIView {
     
     let buttonsContainer: UIStackView = {
         let stack = UIStackView()
+        stack.backgroundColor = .backgroundButtons
         stack.axis = .vertical
         stack.alignment = .fill
         stack.distribution = .fillEqually
-        stack.spacing = 18
+        stack.spacing = 14
+        stack.layer.cornerRadius = 40
+        stack.layoutMargins = UIEdgeInsets(top: 20, left: 15, bottom: 20, right: 15)
+        stack.isLayoutMarginsRelativeArrangement = true
         return stack
     }()
     
@@ -60,6 +65,7 @@ class CalculatorView: UIView {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
+    
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -77,44 +83,46 @@ class CalculatorView: UIView {
         addSubview(mainStack)
         mainStack.addArrangedSubview(displayScrollView)
         mainStack.addArrangedSubview(buttonsContainer)
-        displayScrollView.addSubview(displayContainer)
-        displayContainer.addSubview(displayLabel)
+        displayScrollView.addSubview(displayLabelContainer)
+        displayLabelContainer.addSubview(displayLabel)
     }
     
     private func setupConstraints() {
-        NSLayoutConstraint.activate([
-            mainStack.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 20),
-            mainStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
-            mainStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
-            mainStack.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -20)
-        ])
+        mainStack.anchor(
+            top: safeAreaLayoutGuide.topAnchor,
+            leading: leadingAnchor,
+            bottom: safeAreaLayoutGuide.bottomAnchor,
+            trailing: trailingAnchor,
+            padding: UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+        )
         
-        let displayHeightConstraint = displayScrollView.heightAnchor.constraint(equalTo: mainStack.heightAnchor, multiplier: 0.45)
-        displayHeightConstraint.isActive = true
+        displayLabelContainer.anchor(
+            top: displayScrollView.contentLayoutGuide.topAnchor,
+            leading: displayScrollView.contentLayoutGuide.leadingAnchor,
+            bottom: displayScrollView.contentLayoutGuide.bottomAnchor,
+            trailing: displayScrollView.contentLayoutGuide.trailingAnchor
+        )
         
-        NSLayoutConstraint.activate([
-            displayContainer.topAnchor.constraint(equalTo: displayScrollView.contentLayoutGuide.topAnchor),
-            displayContainer.bottomAnchor.constraint(equalTo: displayScrollView.contentLayoutGuide.bottomAnchor),
-            displayContainer.leadingAnchor.constraint(equalTo: displayScrollView.contentLayoutGuide.leadingAnchor),
-            displayContainer.trailingAnchor.constraint(equalTo: displayScrollView.contentLayoutGuide.trailingAnchor),
-            displayContainer.heightAnchor.constraint(equalTo: displayScrollView.frameLayoutGuide.heightAnchor),
-            displayContainer.widthAnchor.constraint(greaterThanOrEqualTo: displayScrollView.frameLayoutGuide.widthAnchor)
-        ])
-        NSLayoutConstraint.activate([
-            displayLabel.bottomAnchor.constraint(equalTo: displayContainer.bottomAnchor, constant: -16),
-            displayLabel.leadingAnchor.constraint(equalTo: displayContainer.leadingAnchor, constant: 16),
-            displayLabel.trailingAnchor.constraint(equalTo: displayContainer.trailingAnchor, constant: -16)
-        ])
+        displayLabelContainer.heightAnchor.constraint(equalTo: displayScrollView.frameLayoutGuide.heightAnchor).isActive = true
+        displayLabelContainer.widthAnchor.constraint(greaterThanOrEqualTo: displayScrollView.frameLayoutGuide.widthAnchor).isActive = true
         
-        NSLayoutConstraint.activate([
-            themeButton.leadingAnchor.constraint(equalTo: mainStack.safeAreaLayoutGuide.leadingAnchor, constant: 20),
-            themeButton.topAnchor.constraint(equalTo: mainStack.topAnchor, constant: 20)
-        ])
+        displayLabel.anchor(
+            leading: displayLabelContainer.leadingAnchor,
+            bottom: displayLabelContainer.bottomAnchor,
+            trailing: displayLabelContainer.trailingAnchor,
+            padding: UIEdgeInsets(top: 0, left: 16, bottom: 16, right: 16)
+        )
         
+        themeButton.anchor(
+            top: mainStack.topAnchor,
+            leading: mainStack.safeAreaLayoutGuide.leadingAnchor,
+            padding: UIEdgeInsets(top: 20, left: 20,  bottom: 0, right: 0)
+        )
+        
+        displayScrollView.heightAnchor.constraint(equalTo: mainStack.heightAnchor, multiplier: 0.45).isActive = true
     }
-    
+
     //MARK: Buttons Row
-    
     private func setupButtons() {
         buttonTitles.forEach { row in
             buttonsContainer.addArrangedSubview(createButtonRow(row))
@@ -124,7 +132,7 @@ class CalculatorView: UIView {
     private func createButtonRow(_ titles: [ButtonTitle]) -> UIStackView {
         let rowStack = UIStackView()
         rowStack.axis = .horizontal
-        rowStack.spacing = 18
+        rowStack.spacing = 14
         rowStack.alignment = .fill
         rowStack.distribution = .fillEqually
         

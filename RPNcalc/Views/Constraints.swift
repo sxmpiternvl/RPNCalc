@@ -1,47 +1,37 @@
 import UIKit
-
-enum ConstraintAttribute {
-    case top, bottom, leading, trailing, left, right
-}
-
 extension UIView {
-    func setConstraint(_ attribute: ConstraintAttribute, toView: Any, constant: CGFloat = 0) -> NSLayoutConstraint {
-        self.translatesAutoresizingMaskIntoConstraints = false
+    func anchor(
+        top: NSLayoutYAxisAnchor? = nil,
+        leading: NSLayoutXAxisAnchor? = nil,
+        bottom: NSLayoutYAxisAnchor? = nil,
+        trailing: NSLayoutXAxisAnchor? = nil,
+        padding: UIEdgeInsets = .zero,
+        size: CGSize = .zero
+    ) {
+        translatesAutoresizingMaskIntoConstraints = false
         
-        if let toView = toView as? UIView {
-            // If the toView is a UIView
-            switch attribute {
-            case .top:
-                return self.topAnchor.constraint(equalTo: toView.topAnchor, constant: constant)
-            case .bottom:
-                return self.bottomAnchor.constraint(equalTo: toView.bottomAnchor, constant: constant)
-            case .leading:
-                return self.leadingAnchor.constraint(equalTo: toView.leadingAnchor, constant: constant)
-            case .trailing:
-                return self.trailingAnchor.constraint(equalTo: toView.trailingAnchor, constant: constant)
-            case .left:
-                return self.leftAnchor.constraint(equalTo: toView.leftAnchor, constant: constant)
-            case .right:
-                return self.rightAnchor.constraint(equalTo: toView.rightAnchor, constant: constant)
-            }
-        } else if let toGuide = toView as? UILayoutGuide {
-            // If the toView is a UILayoutGuide (e.g., safeAreaLayoutGuide)
-            switch attribute {
-            case .top:
-                return self.topAnchor.constraint(equalTo: toGuide.topAnchor, constant: constant)
-            case .bottom:
-                return self.bottomAnchor.constraint(equalTo: toGuide.bottomAnchor, constant: constant)
-            case .leading:
-                return self.leadingAnchor.constraint(equalTo: toGuide.leadingAnchor, constant: constant)
-            case .trailing:
-                return self.trailingAnchor.constraint(equalTo: toGuide.trailingAnchor, constant: constant)
-            case .left:
-                return self.leftAnchor.constraint(equalTo: toGuide.leftAnchor, constant: constant)
-            case .right:
-                return self.rightAnchor.constraint(equalTo: toGuide.rightAnchor, constant: constant)
-            }
+        if let top = top {
+            topAnchor.constraint(equalTo: top, constant: padding.top).isActive = true
         }
         
-        return NSLayoutConstraint() // Default return, shouldn't happen
+        if let leading = leading {
+            leadingAnchor.constraint(equalTo: leading, constant: padding.left).isActive = true
+        }
+        
+        if let bottom = bottom {
+            bottomAnchor.constraint(equalTo: bottom, constant: -padding.bottom).isActive = true
+        }
+        
+        if let trailing = trailing {
+            trailingAnchor.constraint(equalTo: trailing, constant: -padding.right).isActive = true
+        }
+        
+        if size.width != 0 {
+            widthAnchor.constraint(equalToConstant: size.width).isActive = true
+        }
+        
+        if size.height != 0 {
+            heightAnchor.constraint(equalToConstant: size.height).isActive = true
+        }
     }
 }
