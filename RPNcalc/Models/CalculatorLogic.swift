@@ -10,14 +10,18 @@ enum ExpressionState {
 class CalculatorLogic {
     private(set) var state: ExpressionState = .empty
     var openParenthesisCount: Int = 0
+
     func getExpressionText() -> String {
         switch state {
         case .empty:
             return ButtonTitle.zero.rawValue
+            
         case .normal(let expression):
             return expression
+            
         case .undefined:
             return "Не определено"
+            
         case .result(let result):
             return result
         }
@@ -63,26 +67,38 @@ class CalculatorLogic {
         switch state {
         case .undefined, .empty, .result(_):
             state = .normal(digit)
+            
         case .normal(let expression):
-            if digit == ButtonTitle.zero.rawValue {
+            switch digit {
+            case ButtonTitle.zero.rawValue:
                 let newExpr = (expression == ButtonTitle.zero.rawValue) ? digit : (expression + digit)
                 state = .normal(newExpr)
-            }
-            else {
+                
+            default:
                 state = .normal(expression + digit)
             }
         }
     }
+    
     
     // MARK: addDecimal
     private func addDecimalPoint() {
         switch state {
         case .undefined, .empty, .result(_):
             state = .normal(ButtonTitle.zero.rawValue + ButtonTitle.decimalSeparator.rawValue)
+            
         case .normal(let expr):
-            if let last = expr.last, last == "(" || ((ButtonTitle(rawValue: String(last))?.isOperator) == true) {
+            guard let last = expr.last else {
+                state = .normal(ButtonTitle.zero.rawValue + ButtonTitle.decimalSeparator.rawValue)
+                return
+            }
+            
+            switch last {
+            case "(", 
+                _ where isOperator(last):
                 state = .normal(expr + ButtonTitle.zero.rawValue + ButtonTitle.decimalSeparator.rawValue)
-            } else {
+                
+            default:
                 var currentNumber = ""
                 for char in expr.reversed() {
                     if char.isNumber || String(char) == ButtonTitle.decimalSeparator.rawValue {
@@ -91,96 +107,81 @@ class CalculatorLogic {
                         break
                     }
                 }
+                
                 if currentNumber.contains(ButtonTitle.decimalSeparator.rawValue) {
                     return
                 }
+                
                 state = .normal(expr + ButtonTitle.decimalSeparator.rawValue)
             }
         }
     }
+
     
     // MARK: - Добавление оператора
     private func addOperator(_ op: String) {
         switch state {
         case .undefined:
             state = .normal(ButtonTitle.zero.rawValue + op)
+            
         case .empty:
             state = (op == ButtonTitle.subtract.rawValue) ? .normal(ButtonTitle.subtract.rawValue) : .normal(ButtonTitle.zero.rawValue + op)
+            
         case .result(let val):
             state = .normal(val + op)
+            
         case .normal(var expr):
             guard let last = expr.last else {
                 expr += op
                 state = .normal(expr)
                 return
             }
-            if last == Character(ButtonTitle.openParenthesis.rawValue) {
+
+            switch last {
+            case Character(ButtonTitle.openParenthesis.rawValue):
                 if op == ButtonTitle.subtract.rawValue {
                     expr += op
-                    state = .normal(expr)
                 }
-                return
-            }
-            if last.isNumber {
+                state = .normal(expr)
+                
+            case _ where last.isNumber || last == Character(ButtonTitle.closeParenthesis.rawValue):
                 expr += op
                 state = .normal(expr)
-                return
-            }
-            if expr.hasSuffix(ButtonTitle.multiply.rawValue + ButtonTitle.subtract.rawValue) ||
-                expr.hasSuffix(ButtonTitle.divide.rawValue + ButtonTitle.subtract.rawValue) {
-                if op == ButtonTitle.subtract.rawValue {
-                    return
-                } else {
-                    expr.removeLast(2)
-                    expr += op
-                    state = .normal(expr)
-                    return
-                }
-            }
-            if ((ButtonTitle(rawValue: String(last))?.isOperator) == true) {
-                if (last == Character(ButtonTitle.multiply.rawValue) ||
-                    last == Character(ButtonTitle.divide.rawValue) ||
-                    last == Character(ButtonTitle.power.rawValue))
-                    && op == ButtonTitle.subtract.rawValue {
-                    expr += op
-                    state = .normal(expr)
-                    return
-                }
-                if expr.count >= 2 {
-                    let lastTwo = expr.suffix(2)
-                    if lastTwo.first == Character(ButtonTitle.openParenthesis.rawValue) &&
-                        lastTwo.last == Character(ButtonTitle.subtract.rawValue) &&
-                        op != ButtonTitle.subtract.rawValue {
-                        expr.removeLast()
-                        state = .normal(expr)
-                        return
-                    }
-                }
+
+            case _ where isOperator(last) && op != ButtonTitle.subtract.rawValue:
                 expr.removeLast()
                 expr += op
                 state = .normal(expr)
-                return
+
+            default:
+                expr += op
+                state = .normal(expr)
             }
-            expr += op
-            state = .normal(expr)
         }
     }
-    
+
     // MARK: openParenthesis
     private func addOpenParenthesis() {
         switch state {
         case .undefined, .empty, .result(_):
             state = .normal(ButtonTitle.openParenthesis.rawValue)
             openParenthesisCount = 1
+            
         case .normal(var expr):
-            if let last = expr.last, last.isNumber || last == Character(ButtonTitle.closeParenthesis.rawValue) {
-                expr.append(ButtonTitle.multiply.rawValue)
+            guard let last = expr.last else {
                 expr.append(ButtonTitle.openParenthesis.rawValue)
-            } else if expr == ButtonTitle.zero.rawValue {
-                expr = ButtonTitle.openParenthesis.rawValue
-            } else {
-                expr.append(ButtonTitle.openParenthesis.rawValue)
+                openParenthesisCount += 1
+                state = .normal(expr)
+                return
             }
+            
+            let isLastCharacterValid = last.isNumber || last == Character(ButtonTitle.closeParenthesis.rawValue)
+            
+            if isLastCharacterValid {
+                expr.append(ButtonTitle.multiply.rawValue)
+            }
+            
+            expr.append(ButtonTitle.openParenthesis.rawValue)
             openParenthesisCount += 1
             state = .normal(expr)
         }
@@ -192,10 +193,12 @@ class CalculatorLogic {
         switch state {
         case .undefined, .empty, .result(_):
             return
+            
         case .normal(var expr):
-            if let last = expr.last, last == Character(ButtonTitle.openParenthesis.rawValue) || ((ButtonTitle(rawValue: String(last))?.isOperator) == true) {
+            if let last = expr.last, last == Character(ButtonTitle.openParenthesis.rawValue) || isOperator(last) {
                 return
             }
+            
             expr.append(ButtonTitle.closeParenthesis.rawValue)
             openParenthesisCount -= 1
             state = .normal(expr)
@@ -207,35 +210,51 @@ class CalculatorLogic {
         switch state {
         case .undefined, .empty, .result(_):
             reset()
+            
         case .normal(var expr):
-            if expr.count <= 1 {
+            switch expr.last {
+            case Character(ButtonTitle.openParenthesis.rawValue):
+                openParenthesisCount -= 1
+                expr.removeLast()
+                state = .normal(expr)
+                if openParenthesisCount == 0 {
+                    state = .empty
+                }
+                
+            case .none:
                 openParenthesisCount = 0
                 state = .empty
-            } else {
+                
+            default:
                 expr.removeLast()
                 state = expr.isEmpty ? .empty : .normal(expr)
             }
         }
     }
     
-    
     // MARK: - evaluate
     private func evaluateExpression() {
         guard case .normal(let expr) = state else { return }
         guard expr.filter({ $0.isNumber }).count >= 2 else { return }
         var expressionToEvaluate = expr
-        if let last = expressionToEvaluate.last, ButtonTitle(rawValue: String(last))?.isOperator == true {
+        
+        if let last = expressionToEvaluate.last, isOperator(last) {
             expressionToEvaluate.removeLast()
         }
+        
         if openParenthesisCount > 0 {
             expressionToEvaluate.append(String(repeating: ButtonTitle.closeParenthesis.rawValue, count: openParenthesisCount))
             openParenthesisCount = 0
         }
+        
         print("Infix expression: \(expressionToEvaluate)")
+        
         let replaced = replaceSigns(expressionToEvaluate)
         let rpn = RPNConverter.infixToRPN(replaced)
         let resultVal = RPNEvaluator.evaluate(rpn)
+        
         state = resultVal.isNaN == true ? .undefined : .result(stringFromRoundedNumber(resultVal, toPlaces: 8))
     }
     
 }
+

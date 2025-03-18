@@ -44,13 +44,16 @@ struct RPNConverter {
         if !currentNumber.isEmpty {
             output.append(currentNumber)
         }
+        
         while let last = operatorStack.last {
             operatorStack.removeLast()
             if last != "(" {
                 output.append(last)
             }
         }
+        
         print("RPN expression: \(output)")
+        
         return output
     }
     

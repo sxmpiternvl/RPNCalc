@@ -20,15 +20,6 @@ enum ButtonTitle: String, CaseIterable {
     case decimalSeparator = "."
     case equals = "="
     case power = "^"
-    
-    var isOperator: Bool {
-        switch self {
-        case .add, .subtract, .multiply, .divide, .power:
-            return true
-        default:
-            return false
-        }
-    }
 }
 
 

@@ -14,14 +14,19 @@ struct RPNEvaluator {
                 let b = stack.removeLast()
                 var result: Double = 0
                 switch token {
-                case "+": result = b + a
-                case "-": result = b - a
-                case "*": result = b * a
+                case "+":
+                    result = b + a
+                case "-":
+                    result = b - a
+                case "*":
+                    result = b * a
                 case "/":
                     if a == 0 { return Double.nan }
                     result = b / a
-                case "^": result = pow(b, a)
-                default: break
+                case "^":
+                    result = pow(b, a)
+                default:
+                    break
                 }
                 stack.append(result)
             }
