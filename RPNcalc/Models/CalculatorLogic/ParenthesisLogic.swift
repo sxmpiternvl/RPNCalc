@@ -1,6 +1,11 @@
 import Foundation
 
-class ParenthesisLogic {
+protocol ParenthesisLogicProtocol {
+    func addOpenParenthesis(currentState state: inout ExpressionState, openParenthesisCount: inout Int)
+    func addCloseParenthesis(currentState state: inout ExpressionState, openParenthesisCount: inout Int)
+}
+
+class ParenthesisLogic:ParenthesisLogicProtocol {
     func addOpenParenthesis(currentState state: inout ExpressionState, openParenthesisCount: inout Int) {
         switch state {
         case .undefined, .empty, .result(_):

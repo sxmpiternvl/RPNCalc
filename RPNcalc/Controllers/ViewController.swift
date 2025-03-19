@@ -3,16 +3,16 @@ import UIKit
 class ViewController: UIViewController {
     
     private let calculatorView = CalculatorView()
-    private let logic = CalculatorLogic()
+    private var logic: CalculatorLogicProtocol = CalculatorLogic()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .background
         setupCalculatorView()
         setupButtonActions()
+        setupLongPressForClearButton()
         updateDisplay()
     }
-    
     
     private func setupCalculatorView() {
         view.addSubview(calculatorView)
@@ -24,7 +24,6 @@ class ViewController: UIViewController {
             calculatorView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
-    
     
     private func setupButtonActions() {
         let buttons = calculatorView.buttonsContainer.arrangedSubviews
@@ -43,6 +42,20 @@ class ViewController: UIViewController {
               let button = ButtonTitle(rawValue: title) else { return }
         logic.handleInput(button)
         updateDisplay()
+    }
+    
+    private func setupLongPressForClearButton() {
+        if let clearButton = calculatorView.dynamicClearButton {
+            let longPress = UILongPressGestureRecognizer(target: self, action: #selector(longPressClear(_:)))
+            clearButton.addGestureRecognizer(longPress)
+        }
+    }
+
+    @objc func longPressClear(_ sender: UILongPressGestureRecognizer) {
+        if sender.state == .began {
+            logic.handleInput(.allClear)
+            updateDisplay()
+        }
     }
     
     private func updateDisplay() {
@@ -69,6 +82,13 @@ class ViewController: UIViewController {
         
         let maxOffsetX = max(0, calculatorView.displayScrollView.contentSize.width - calculatorView.displayScrollView.bounds.width)
         calculatorView.displayScrollView.setContentOffset(CGPoint(x: maxOffsetX, y: 0), animated: false)
+        
+
+        if !logic.lastInfixExpression.isEmpty {
+               calculatorView.historyLabel.text = logic.lastInfixExpression
+           } else {
+               calculatorView.historyLabel.text = ""
+           }
     }
     
     private func updateClearButtonTitle() {

@@ -57,6 +57,16 @@ class CalculatorView: UIView {
         return stack
     }()
     
+    let historyLabel: UILabel = {
+            let label = UILabel()
+            label.textColor = .gray
+            label.font = UIFont.systemFont(ofSize: 20, weight: .regular)
+            label.textAlignment = .right
+            label.numberOfLines = 1
+            label.translatesAutoresizingMaskIntoConstraints = false
+            return label
+        }()
+    
     private let themeButton: UIButton = {
         let button = UIButton(type: .system)
         let image = UIImage(systemName: "lightbulb")
@@ -84,43 +94,52 @@ class CalculatorView: UIView {
         mainStack.addArrangedSubview(displayScrollView)
         mainStack.addArrangedSubview(buttonsContainer)
         displayScrollView.addSubview(displayLabelContainer)
+        displayLabelContainer.addSubview(historyLabel)
         displayLabelContainer.addSubview(displayLabel)
     }
     
     private func setupConstraints() {
-        mainStack.anchor(
-            top: safeAreaLayoutGuide.topAnchor,
-            leading: leadingAnchor,
-            bottom: safeAreaLayoutGuide.bottomAnchor,
-            trailing: trailingAnchor,
-            padding: UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
-        )
-        
-        displayLabelContainer.anchor(
-            top: displayScrollView.contentLayoutGuide.topAnchor,
-            leading: displayScrollView.contentLayoutGuide.leadingAnchor,
-            bottom: displayScrollView.contentLayoutGuide.bottomAnchor,
-            trailing: displayScrollView.contentLayoutGuide.trailingAnchor
-        )
-        
-        displayLabelContainer.heightAnchor.constraint(equalTo: displayScrollView.frameLayoutGuide.heightAnchor).isActive = true
-        displayLabelContainer.widthAnchor.constraint(greaterThanOrEqualTo: displayScrollView.frameLayoutGuide.widthAnchor).isActive = true
-        
-        displayLabel.anchor(
-            leading: displayLabelContainer.leadingAnchor,
-            bottom: displayLabelContainer.bottomAnchor,
-            trailing: displayLabelContainer.trailingAnchor,
-            padding: UIEdgeInsets(top: 0, left: 16, bottom: 16, right: 16)
-        )
-        
-        themeButton.anchor(
-            top: mainStack.topAnchor,
-            leading: mainStack.safeAreaLayoutGuide.leadingAnchor,
-            padding: UIEdgeInsets(top: 20, left: 20,  bottom: 0, right: 0)
-        )
-        
-        displayScrollView.heightAnchor.constraint(equalTo: mainStack.heightAnchor, multiplier: 0.45).isActive = true
-    }
+          mainStack.anchor(
+              top: safeAreaLayoutGuide.topAnchor,
+              leading: leadingAnchor,
+              bottom: safeAreaLayoutGuide.bottomAnchor,
+              trailing: trailingAnchor,
+              padding: UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+          )
+          
+          displayLabelContainer.anchor(
+              top: displayScrollView.contentLayoutGuide.topAnchor,
+              leading: displayScrollView.contentLayoutGuide.leadingAnchor,
+              bottom: displayScrollView.contentLayoutGuide.bottomAnchor,
+              trailing: displayScrollView.contentLayoutGuide.trailingAnchor
+          )
+          
+          displayLabelContainer.heightAnchor.constraint(equalTo: displayScrollView.frameLayoutGuide.heightAnchor).isActive = true
+          displayLabelContainer.widthAnchor.constraint(greaterThanOrEqualTo: displayScrollView.frameLayoutGuide.widthAnchor).isActive = true
+          
+          historyLabel.anchor(
+              top: displayLabelContainer.topAnchor,
+              leading: displayLabelContainer.leadingAnchor,
+              trailing: displayLabelContainer.trailingAnchor,
+              padding: UIEdgeInsets(top: 200, left: 16, bottom: 0, right: 16)
+          )
+          
+          displayLabel.anchor(
+              top: historyLabel.bottomAnchor,
+              leading: displayLabelContainer.leadingAnchor,
+              bottom: displayLabelContainer.bottomAnchor,
+              trailing: displayLabelContainer.trailingAnchor,
+              padding: UIEdgeInsets(top: 4, left: 16, bottom: 16, right: 16)
+          )
+          
+          themeButton.anchor(
+              top: mainStack.topAnchor,
+              leading: mainStack.safeAreaLayoutGuide.leadingAnchor,
+              padding: UIEdgeInsets(top: 20, left: 20, bottom: 0, right: 0)
+          )
+          
+          displayScrollView.heightAnchor.constraint(equalTo: mainStack.heightAnchor, multiplier: 0.45).isActive = true
+      }
 
     //MARK: Buttons Row
     private func setupButtons() {
@@ -181,11 +200,6 @@ class CalculatorView: UIView {
         isDarkMode.toggle()
         let newStyle: UIUserInterfaceStyle = isDarkMode ? .dark : .light
         guard let window = window else { return }
-        UIView.transition(with: window,
-                          duration: 0.5,
-                          options: .transitionCrossDissolve,
-                          animations: {
-            window.overrideUserInterfaceStyle = newStyle
-        }, completion: nil)
+        window.overrideUserInterfaceStyle = newStyle
     }
 }

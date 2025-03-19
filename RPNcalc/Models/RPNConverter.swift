@@ -1,4 +1,9 @@
-struct RPNConverter {
+
+protocol RPNConverterProtocol {
+    static func infixToRPN(_ input: [String]) -> [String]
+}
+
+struct RPNConverter: RPNConverterProtocol {
     static func infixToRPN(_ input: [String]) -> [String] {
         var output: [String] = []
         var operatorStack: [String] = []

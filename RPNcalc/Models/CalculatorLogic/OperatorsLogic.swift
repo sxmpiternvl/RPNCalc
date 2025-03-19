@@ -1,6 +1,10 @@
 import Foundation
 
-class OperatorsLogic {
+protocol OperatorsLogicProtocol {
+    func addOperator(_ op: String, currentState state: inout ExpressionState)
+}
+
+class OperatorsLogic: OperatorsLogicProtocol {
     func addOperator(_ op: String, currentState state: inout ExpressionState) {
         switch state {
         case .undefined:

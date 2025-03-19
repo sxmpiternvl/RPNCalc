@@ -7,10 +7,18 @@ enum ExpressionState {
     case result(String)
 }
 
-class CalculatorLogic {
-    private(set) var state: ExpressionState = .empty
+protocol CalculatorLogicProtocol {
+    var state: ExpressionState { get }
+    var openParenthesisCount: Int { get }
+    var lastInfixExpression: String { get set }
+    func getExpressionText() -> String
+    func handleInput(_ button: ButtonTitle)
+}
+
+class CalculatorLogic: CalculatorLogicProtocol {
     var openParenthesisCount: Int = 0
-    
+    var lastInfixExpression: String = ""
+    private(set) var state: ExpressionState = .empty
     private let numbersLogic = NumbersLogic()
     private let operatorsLogic = OperatorsLogic()
     private let parenthesisLogic = ParenthesisLogic()
@@ -50,24 +58,30 @@ class CalculatorLogic {
             parenthesisLogic.addCloseParenthesis(currentState: &state, openParenthesisCount: &openParenthesisCount)
         case .equals:
             evaluateExpression()
-        case .allClear, .backspace:
-            clear()
+        case .backspace:
+              backspace()
+          case .allClear:
+              allClear()
         }
     }
         
-    private func clear() {
-        switch state {
-        case .undefined, .empty, .result(_):
-            state = .empty
-            openParenthesisCount = 0
-        case .normal(var expr):
-            if let last = expr.last, String(last) == ButtonTitle.openParenthesis.rawValue {
-                openParenthesisCount -= 1
-            }
-            expr.removeLast()
-            state = expr.isEmpty ? .empty : .normal(expr)
-        }
-    }
+    private func backspace() {
+          switch state {
+          case .normal(var expr):
+              if let last = expr.last, String(last) == ButtonTitle.openParenthesis.rawValue {
+                  openParenthesisCount -= 1
+              }
+              expr.removeLast()
+              state = expr.isEmpty ? .empty : .normal(expr)
+          default:
+              break
+          }
+      }
+      
+      private func allClear() {
+          state = .empty
+          openParenthesisCount = 0
+      }
     
     private func evaluateExpression() {
         guard case .normal(let expr) = state else { return }
@@ -87,6 +101,7 @@ class CalculatorLogic {
         print("Infix expression: \(expressionToEvaluate)")
         
         if let resultStr = evaluate(expressionToEvaluate) {
+            lastInfixExpression = expr
             state = .result(resultStr)
         } else {
             state = .undefined

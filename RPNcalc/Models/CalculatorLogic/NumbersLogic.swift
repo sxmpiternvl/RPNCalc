@@ -1,6 +1,11 @@
 import Foundation
 
-class NumbersLogic {
+protocol NumbersLogicProtocol {
+    func addDigit(_ digit: String, currentState state: inout ExpressionState)
+    func addDecimalPoint(currentState state: inout ExpressionState)
+}
+
+class NumbersLogic: NumbersLogicProtocol {
     func addDigit(_ digit: String, currentState state: inout ExpressionState) {
         switch state {
         case .undefined, .empty, .result(_):
