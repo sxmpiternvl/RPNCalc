@@ -1,6 +1,7 @@
 import Foundation
 
 struct CalculatorUtils: CalculatorUtilsProtocol {
+    
     func prepareExpression(_ input: String) -> [String] {
         var result = input
         result = result.replacingOccurrences(of: "÷", with: "/")
@@ -23,6 +24,7 @@ struct CalculatorUtils: CalculatorUtilsProtocol {
         return output
     }
     
+    
     func formatNumber(_ value: Double, toPlaces places: Int) -> String {
         let intMax = 1e10
         let intMin = 1e-10
@@ -38,7 +40,8 @@ struct CalculatorUtils: CalculatorUtilsProtocol {
         }
     }
     
+    
     func isOperator(_ char: Character) -> Bool {
-        return ["+", "-", "*", "/", "^"].contains(String(char))
+        return ["+", "-", "*", "/", "^", "×", "÷"].contains(String(char))
     }
 }

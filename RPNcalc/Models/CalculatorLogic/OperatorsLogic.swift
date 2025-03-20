@@ -12,24 +12,31 @@ class OperatorsLogic: OperatorsLogicProtocol {
         case .result(let val):
             state = .normal(val + op)
         case .normal(var expr):
-            if let last = expr.last {
-                if String(last) == ButtonTitle.openParenthesis.rawValue {
-                    if op == ButtonTitle.subtract.rawValue {
+            guard let last = expr.last else {
+                expr.append(op)
+                state = .normal(expr)
+                return
+            }
+            switch last {
+            case Character(ButtonTitle.openParenthesis.rawValue):
+                if op == ButtonTitle.subtract.rawValue {
+                    expr.append(op)
+                }
+                state = .normal(expr)
+            case let ch where ch.isNumber:
+                expr.append(op)
+                state = .normal(expr)
+            case let ch where utils.isOperator(ch):
+                if op == ButtonTitle.subtract.rawValue {
+                    if ch != Character(ButtonTitle.subtract.rawValue) {
                         expr.append(op)
                     }
-                    state = .normal(expr)
-                } else if last.isNumber || String(last) == ButtonTitle.closeParenthesis.rawValue {
-                    expr.append(op)
-                    state = .normal(expr)
-                } else if utils.isOperator(last) && op != ButtonTitle.subtract.rawValue {
+                } else {
                     expr.removeLast()
                     expr.append(op)
-                    state = .normal(expr)
-                } else {
-                    expr.append(op)
-                    state = .normal(expr)
                 }
-            } else {
+                state = .normal(expr)
+            default:
                 expr.append(op)
                 state = .normal(expr)
             }

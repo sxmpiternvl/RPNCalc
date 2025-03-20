@@ -8,6 +8,11 @@ enum ExpressionState {
 }
 
 class CalculatorLogic: CalculatorLogicProtocol {
+    
+    init() {
+        loadHistory()
+    }
+    
     var openParenthesisCount: Int = 0
     var lastInfixExpression: String = ""
     var history: [HistoryEntry] = []
@@ -16,7 +21,8 @@ class CalculatorLogic: CalculatorLogicProtocol {
     private let operatorsLogic = OperatorsLogic()
     private let parenthesisLogic = ParenthesisLogic()
     private let utils = CalculatorUtils()
-
+    private let historyKey = "calculatorHistory"
+    
     func getExpressionText() -> String {
         switch state {
         case .empty:
@@ -24,7 +30,7 @@ class CalculatorLogic: CalculatorLogicProtocol {
         case .normal(let expression):
             return expression
         case .undefined:
-            return "Не определено"
+            return NSLocalizedString("nanNumber", comment: "NaN number")
         case .result(let result):
             return result
         }
@@ -53,47 +59,40 @@ class CalculatorLogic: CalculatorLogicProtocol {
         case .equals:
             evaluateExpression()
         case .backspace:
-              backspace()
-          case .allClear:
-              allClear()
+            backspace()
+        case .allClear:
+            allClear()
         }
     }
-        
+    
     private func backspace() {
-          switch state {
-          case .normal(var expr):
-              if let last = expr.last, String(last) == ButtonTitle.openParenthesis.rawValue {
-                  openParenthesisCount -= 1
-              }
-              expr.removeLast()
-              state = expr.isEmpty ? .empty : .normal(expr)
-          default:
-              break
-          }
-      }
-      
-      private func allClear() {
-          state = .empty
-          openParenthesisCount = 0
-      }
+        switch state {
+        case .normal(var expr):
+            if let last = expr.last, String(last) == ButtonTitle.openParenthesis.rawValue {
+                openParenthesisCount -= 1
+            }
+            expr.removeLast()
+            state = expr.isEmpty ? .empty : .normal(expr)
+        default:
+            break
+        }
+    }
+    
+    private func allClear() {
+        state = .empty
+        openParenthesisCount = 0
+    }
     
     private func evaluateExpression() {
         guard case .normal(let expr) = state else { return }
         guard expr.filter({ $0.isNumber }).count >= 2 else { return }
         
-        var expressionToEvaluate = expr
+        let cleanedExpression = appendMissingParentheses(removeTrailingOperator(from: expr))
         
-        if let last = expressionToEvaluate.last, utils.isOperator(last) {
-            expressionToEvaluate.removeLast()
-        }
+        let preparedExpression = utils.prepareExpression(cleanedExpression)
         
-        if openParenthesisCount > 0 {
-            expressionToEvaluate.append(String(repeating: ButtonTitle.closeParenthesis.rawValue, count: openParenthesisCount))
-            openParenthesisCount = 0
-        }
-        
-        let preparedExpression = utils.prepareExpression(expressionToEvaluate)
         let rpn = RPNConverter.infixToRPN(preparedExpression)
+        
         let resultValue = RPNEvaluator.evaluate(rpn)
         
         guard !resultValue.isNaN else {
@@ -102,15 +101,56 @@ class CalculatorLogic: CalculatorLogicProtocol {
         }
         
         let resultStr = utils.formatNumber(resultValue, toPlaces: 8)
+        updateHistory(with: cleanedExpression, result: resultStr, preparedExpression: preparedExpression)
         
-        let rpnForHistory = RPNConverter.infixToRPN(preparedExpression)
-        let rpnExpression = rpnForHistory.joined(separator: " ")
-        
-        let entry = HistoryEntry(infixExpression: expr, rpnExpression: rpnExpression, result: resultStr)
-        history.append(entry)        
-        lastInfixExpression = expr
-
+        lastInfixExpression = cleanedExpression
         state = .result(resultStr)
     }
-
+    
+    private func removeTrailingOperator(from expression: String) -> String {
+        var expr = expression
+        if let last = expr.last, utils.isOperator(last) {
+            expr.removeLast()
+        }
+        return expr
+    }
+    
+    private func appendMissingParentheses(_ expression:String) -> String {
+        var expr = expression
+        if openParenthesisCount > 0 {
+            let closingBrackets = String(repeating: ButtonTitle.closeParenthesis.rawValue, count: openParenthesisCount)
+            expr.append(closingBrackets)
+            openParenthesisCount = 0
+        }
+        return expr
+    }
+    
+    private func updateHistory(with originalExpression: String, result: String, preparedExpression: [String]) {
+        let rpn = RPNConverter.infixToRPN(preparedExpression)
+        let rpnExpression = rpn.joined(separator: " ")
+        let entry = HistoryEntry(infixExpression: originalExpression, rpnExpression: rpnExpression, result: result)
+        history.append(entry)
+        saveHistory()
+    }
+    
+    func saveHistory() {
+        do {
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(history)
+            UserDefaults.standard.set(data, forKey: historyKey)
+        } catch {
+            print("Ошибка сохранения истории: \(error)")
+        }
+    }
+    
+    func loadHistory() {
+        guard let data = UserDefaults.standard.data(forKey: historyKey) else { return }
+        do {
+            let decoder = JSONDecoder()
+            history = try decoder.decode([HistoryEntry].self, from: data)
+        } catch {
+            print("Ошибка загрузки истории: \(error)")
+        }
+    }
+    
 }

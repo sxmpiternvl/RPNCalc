@@ -37,12 +37,8 @@ class ViewController: UIViewController {
     private func setupCalculatorView() {
         view.addSubview(calculatorView)
         calculatorView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            calculatorView.topAnchor.constraint(equalTo: view.topAnchor),
-            calculatorView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            calculatorView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            calculatorView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
+        calculatorView
+            .anchor(top: view.topAnchor, leading: view.leadingAnchor, bottom: view.bottomAnchor,trailing: view.trailingAnchor)
     }
     
     private func setupButtonActions() {
@@ -80,13 +76,27 @@ class ViewController: UIViewController {
     
     private func updateDisplay() {
         let expression = logic.getExpressionText()
-        let fontSize: CGFloat = (expression == "Не определено") ? 46 : 58
+        let attributedText = createAttributedText(for: expression)
+        calculatorView.displayLabel.attributedText = attributedText
+
+        updateClearButtonTitle()
+        view.layoutIfNeeded()
+        
+        updateScrollViewOffset()
+        updateHistoryLabel()
+    }
+
+    private func createAttributedText(for expression: String) -> NSAttributedString {
+        let NaNString =  NSLocalizedString("historyTitle", comment: "History title")
+        let fontSize: CGFloat = (expression == NaNString) ? .x4 : .x6
         let font = UIFont.systemFont(ofSize: fontSize, weight: .medium)
         let mainAttributes: [NSAttributedString.Key: Any] = [
             .foregroundColor: UIColor.white,
             .font: font
         ]
+        
         let attributedText = NSMutableAttributedString(string: expression, attributes: mainAttributes)
+        
         if logic.openParenthesisCount > 0 {
             let lightText = String(repeating: ")", count: logic.openParenthesisCount)
             let lightAttributes: [NSAttributedString.Key: Any] = [
@@ -96,14 +106,16 @@ class ViewController: UIViewController {
             let lightAttributedText = NSAttributedString(string: lightText, attributes: lightAttributes)
             attributedText.append(lightAttributedText)
         }
-        calculatorView.displayLabel.attributedText = attributedText
-        updateClearButtonTitle()
-        view.layoutIfNeeded()
         
+        return attributedText
+    }
+
+    private func updateScrollViewOffset() {
         let maxOffsetX = max(0, calculatorView.displayScrollView.contentSize.width - calculatorView.displayScrollView.bounds.width)
         calculatorView.displayScrollView.setContentOffset(CGPoint(x: maxOffsetX, y: 0), animated: false)
-        
-        
+    }
+
+    private func updateHistoryLabel() {
         if !logic.lastInfixExpression.isEmpty {
             calculatorView.historyLabel.text = logic.lastInfixExpression
         } else {
@@ -130,9 +142,9 @@ class ViewController: UIViewController {
         historyVC.onClearHistory = { [weak self] in
             self?.logic.history.removeAll()
         }
-        let navVC = UINavigationController(rootViewController: historyVC)
-        navVC.modalPresentationStyle = .pageSheet
-        present(navVC, animated: true, completion: nil)
+        let navigationViewController = UINavigationController(rootViewController: historyVC)
+        navigationViewController.modalPresentationStyle = .pageSheet
+        present(navigationViewController, animated: true, completion: nil)
     }
     
     @objc private func toggleTheme() {

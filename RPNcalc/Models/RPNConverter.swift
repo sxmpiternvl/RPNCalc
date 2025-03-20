@@ -1,8 +1,4 @@
 
-protocol RPNConverterProtocol {
-    static func infixToRPN(_ input: [String]) -> [String]
-}
-
 struct RPNConverter: RPNConverterProtocol {
     static func infixToRPN(_ input: [String]) -> [String] {
         var output: [String] = []
@@ -56,8 +52,6 @@ struct RPNConverter: RPNConverterProtocol {
                 output.append(last)
             }
         }
-        
-        print("RPN expression: \(output)")
         
         return output
     }

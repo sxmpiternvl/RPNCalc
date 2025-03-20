@@ -1,6 +1,6 @@
 import UIKit
 
-struct HistoryEntry {
+struct HistoryEntry: Codable {
     let infixExpression: String
     let rpnExpression: String
     let result: String
@@ -21,7 +21,7 @@ class CalculatorView: UIView {
     private let mainStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = 20
+        stack.spacing = .x2
         stack.alignment = .fill
         stack.translatesAutoresizingMaskIntoConstraints = false
         return stack
@@ -54,9 +54,9 @@ class CalculatorView: UIView {
         stack.axis = .vertical
         stack.alignment = .fill
         stack.distribution = .fillEqually
-        stack.spacing = 14
-        stack.layer.cornerRadius = 40
-        stack.layoutMargins = UIEdgeInsets(top: 20, left: 15, bottom: 20, right: 15)
+        stack.spacing = .x1
+        stack.layer.cornerRadius = .x4
+        stack.layoutMargins = UIEdgeInsets(top: .x2, left: .x2, bottom: .x2, right: .x2)
         stack.isLayoutMarginsRelativeArrangement = true
         return stack
     }()
@@ -64,7 +64,7 @@ class CalculatorView: UIView {
     let historyLabel: UILabel = {
             let label = UILabel()
             label.textColor = .gray
-            label.font = UIFont.systemFont(ofSize: 20, weight: .regular)
+        label.font = UIFont.systemFont(ofSize: .x2, weight: .regular)
             label.textAlignment = .right
             label.numberOfLines = 1
             label.translatesAutoresizingMaskIntoConstraints = false
@@ -96,8 +96,7 @@ class CalculatorView: UIView {
               top: safeAreaLayoutGuide.topAnchor,
               leading: leadingAnchor,
               bottom: safeAreaLayoutGuide.bottomAnchor,
-              trailing: trailingAnchor,
-              padding: UIEdgeInsets(top: 20, left: 16, bottom: 20, right: 16)
+              trailing: trailingAnchor
           )
           
           displayLabelContainer.anchor(
@@ -109,11 +108,12 @@ class CalculatorView: UIView {
         
         displayLabelContainer.heightAnchor.constraint(equalTo: displayScrollView.frameLayoutGuide.heightAnchor).isActive = true
         displayLabelContainer.widthAnchor.constraint(greaterThanOrEqualTo: displayScrollView.frameLayoutGuide.widthAnchor).isActive = true
+        
         historyLabel.anchor(
             top: nil,
             leading: displayLabelContainer.leadingAnchor,
             trailing: displayLabelContainer.trailingAnchor,
-            padding: UIEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
+            padding: UIEdgeInsets(top: .x2, left: .x2, bottom: .x2, right: .x2)
         )
           
           displayLabel.anchor(
@@ -121,7 +121,7 @@ class CalculatorView: UIView {
               leading: displayLabelContainer.leadingAnchor,
               bottom: displayLabelContainer.bottomAnchor,
               trailing: displayLabelContainer.trailingAnchor,
-              padding: UIEdgeInsets(top: 4, left: 16, bottom: 16, right: 16)
+              padding: UIEdgeInsets(top: .x1, left: .x1, bottom: .x1, right: .x1)
           )
           
           displayScrollView.heightAnchor.constraint(equalTo: mainStack.heightAnchor, multiplier: 0.45).isActive = true
@@ -137,7 +137,7 @@ class CalculatorView: UIView {
     private func createButtonRow(_ titles: [ButtonTitle]) -> UIStackView {
         let rowStack = UIStackView()
         rowStack.axis = .horizontal
-        rowStack.spacing = 14
+        rowStack.spacing = .x1
         rowStack.alignment = .fill
         rowStack.distribution = .fillEqually
         
@@ -156,7 +156,7 @@ class CalculatorView: UIView {
         let button = UIButton(type: .system)
         button.setTitle(buttonTitle.rawValue, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 28, weight: .bold)
-        button.layer.cornerRadius = 20
+        button.layer.cornerRadius = .x2
         
         switch buttonTitle {
         case .add, .subtract, .multiply, .divide, .power:
