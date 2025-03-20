@@ -1,22 +1,8 @@
-import Foundation
-
-protocol NumbersLogicProtocol {
-    func addDigit(_ digit: String, currentState state: inout ExpressionState)
-    func addDecimalPoint(currentState state: inout ExpressionState)
-}
-
 class NumbersLogic: NumbersLogicProtocol {
-    func addDigit(_ digit: String, currentState state: inout ExpressionState) {
-        switch state {
-        case .undefined, .empty, .result(_):
-            state = .normal(digit)
-        case .normal(let expression):
-            if digit == ButtonTitle.zero.rawValue && expression == ButtonTitle.zero.rawValue {
-                state = .normal(digit)
-            } else {
-                state = .normal(expression + digit)
-            }
-        }
+    private let utils: CalculatorUtilsProtocol
+    
+    init(utils: CalculatorUtilsProtocol = CalculatorUtils()) {
+        self.utils = utils
     }
     
     func addDecimalPoint(currentState state: inout ExpressionState) {
@@ -29,7 +15,7 @@ class NumbersLogic: NumbersLogicProtocol {
                 return
             }
             
-            if String(last) == ButtonTitle.openParenthesis.rawValue || isOperator(last) {
+            if String(last) == ButtonTitle.openParenthesis.rawValue || utils.isOperator(last) {
                 state = .normal(expr + ButtonTitle.zero.rawValue + ButtonTitle.decimalSeparator.rawValue)
             } else {
                 var currentNumber = ""
@@ -49,4 +35,16 @@ class NumbersLogic: NumbersLogicProtocol {
         }
     }
     
+    func addDigit(_ digit: String, currentState state: inout ExpressionState) {
+        switch state {
+        case .undefined, .empty, .result(_):
+            state = .normal(digit)
+        case .normal(let expression):
+            if digit == ButtonTitle.zero.rawValue && expression == ButtonTitle.zero.rawValue {
+                state = .normal(digit)
+            } else {
+                state = .normal(expression + digit)
+            }
+        }
+    }
 }

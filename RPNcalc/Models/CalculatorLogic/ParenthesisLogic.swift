@@ -1,11 +1,8 @@
 import Foundation
 
-protocol ParenthesisLogicProtocol {
-    func addOpenParenthesis(currentState state: inout ExpressionState, openParenthesisCount: inout Int)
-    func addCloseParenthesis(currentState state: inout ExpressionState, openParenthesisCount: inout Int)
-}
-
 class ParenthesisLogic:ParenthesisLogicProtocol {
+    private let utils = CalculatorUtils()
+    
     func addOpenParenthesis(currentState state: inout ExpressionState, openParenthesisCount: inout Int) {
         switch state {
         case .undefined, .empty, .result(_):
@@ -27,7 +24,7 @@ class ParenthesisLogic:ParenthesisLogicProtocol {
         case .undefined, .empty, .result(_):
             return
         case .normal(var expr):
-            if let last = expr.last, String(last) == ButtonTitle.openParenthesis.rawValue || isOperator(last) {
+            if let last = expr.last, String(last) == ButtonTitle.openParenthesis.rawValue || utils.isOperator(last) {
                 return
             }
             expr.append(ButtonTitle.closeParenthesis.rawValue)

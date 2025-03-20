@@ -4,6 +4,7 @@ class ViewController: UIViewController {
     
     private let calculatorView = CalculatorView()
     private var logic: CalculatorLogicProtocol = CalculatorLogic()
+    private var isDarkMode = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -12,6 +13,25 @@ class ViewController: UIViewController {
         setupButtonActions()
         setupLongPressForClearButton()
         updateDisplay()
+        setupNavigationBarButton()
+    }
+    
+    private func setupNavigationBarButton() {
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "list.bullet"),
+            style: .done,
+            target: self,
+            action: #selector(showHistory)
+        )
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "lightbulb"),
+            style: .done,
+            target: self,
+            action: #selector(
+                toggleTheme
+            )
+        )
     }
     
     private func setupCalculatorView() {
@@ -50,7 +70,7 @@ class ViewController: UIViewController {
             clearButton.addGestureRecognizer(longPress)
         }
     }
-
+    
     @objc func longPressClear(_ sender: UILongPressGestureRecognizer) {
         if sender.state == .began {
             logic.handleInput(.allClear)
@@ -83,12 +103,12 @@ class ViewController: UIViewController {
         let maxOffsetX = max(0, calculatorView.displayScrollView.contentSize.width - calculatorView.displayScrollView.bounds.width)
         calculatorView.displayScrollView.setContentOffset(CGPoint(x: maxOffsetX, y: 0), animated: false)
         
-
+        
         if !logic.lastInfixExpression.isEmpty {
-               calculatorView.historyLabel.text = logic.lastInfixExpression
-           } else {
-               calculatorView.historyLabel.text = ""
-           }
+            calculatorView.historyLabel.text = logic.lastInfixExpression
+        } else {
+            calculatorView.historyLabel.text = ""
+        }
     }
     
     private func updateClearButtonTitle() {
@@ -98,6 +118,28 @@ class ViewController: UIViewController {
         case .normal(_):
             calculatorView.dynamicClearButton?.setTitle("⌫", for: .normal)
         }
+    }
+    
+    @objc private func showHistory() {
+        let historyVC = HistoryViewController()
+        historyVC.history = logic.history
+        
+        historyVC.onDeleteEntry = { [weak self] index in
+            self?.logic.history.remove(at: index)
+        }
+        historyVC.onClearHistory = { [weak self] in
+            self?.logic.history.removeAll()
+        }
+        let navVC = UINavigationController(rootViewController: historyVC)
+        navVC.modalPresentationStyle = .pageSheet
+        present(navVC, animated: true, completion: nil)
+    }
+    
+    @objc private func toggleTheme() {
+        isDarkMode.toggle()
+        let newStyle: UIUserInterfaceStyle = isDarkMode ? .dark : .light
+        guard let window = view.window else { return }
+        window.overrideUserInterfaceStyle = newStyle
     }
     
 }

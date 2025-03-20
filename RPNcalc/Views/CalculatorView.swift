@@ -1,10 +1,14 @@
 import UIKit
 
+struct HistoryEntry {
+    let infixExpression: String
+    let rpnExpression: String
+    let result: String
+}
+
 class CalculatorView: UIView {
     
     var dynamicClearButton: UIButton?
-    
-    private var isDarkMode = false
     
     let buttonTitles: [[ButtonTitle]] = [
         [.allClear, .openParenthesis, .closeParenthesis, .divide],
@@ -67,21 +71,10 @@ class CalculatorView: UIView {
             return label
         }()
     
-    private let themeButton: UIButton = {
-        let button = UIButton(type: .system)
-        let image = UIImage(systemName: "lightbulb")
-        button.setImage(image, for: .normal)
-        button.tintColor = .white
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
-    
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupViews()
         setupButtons()
-        setupThemeButton()
         setupConstraints()
     }
     
@@ -104,7 +97,7 @@ class CalculatorView: UIView {
               leading: leadingAnchor,
               bottom: safeAreaLayoutGuide.bottomAnchor,
               trailing: trailingAnchor,
-              padding: UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+              padding: UIEdgeInsets(top: 20, left: 16, bottom: 20, right: 16)
           )
           
           displayLabelContainer.anchor(
@@ -113,16 +106,15 @@ class CalculatorView: UIView {
               bottom: displayScrollView.contentLayoutGuide.bottomAnchor,
               trailing: displayScrollView.contentLayoutGuide.trailingAnchor
           )
-          
-          displayLabelContainer.heightAnchor.constraint(equalTo: displayScrollView.frameLayoutGuide.heightAnchor).isActive = true
-          displayLabelContainer.widthAnchor.constraint(greaterThanOrEqualTo: displayScrollView.frameLayoutGuide.widthAnchor).isActive = true
-          
-          historyLabel.anchor(
-              top: displayLabelContainer.topAnchor,
-              leading: displayLabelContainer.leadingAnchor,
-              trailing: displayLabelContainer.trailingAnchor,
-              padding: UIEdgeInsets(top: 200, left: 16, bottom: 0, right: 16)
-          )
+        
+        displayLabelContainer.heightAnchor.constraint(equalTo: displayScrollView.frameLayoutGuide.heightAnchor).isActive = true
+        displayLabelContainer.widthAnchor.constraint(greaterThanOrEqualTo: displayScrollView.frameLayoutGuide.widthAnchor).isActive = true
+        historyLabel.anchor(
+            top: nil,
+            leading: displayLabelContainer.leadingAnchor,
+            trailing: displayLabelContainer.trailingAnchor,
+            padding: UIEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
+        )
           
           displayLabel.anchor(
               top: historyLabel.bottomAnchor,
@@ -130,12 +122,6 @@ class CalculatorView: UIView {
               bottom: displayLabelContainer.bottomAnchor,
               trailing: displayLabelContainer.trailingAnchor,
               padding: UIEdgeInsets(top: 4, left: 16, bottom: 16, right: 16)
-          )
-          
-          themeButton.anchor(
-              top: mainStack.topAnchor,
-              leading: mainStack.safeAreaLayoutGuide.leadingAnchor,
-              padding: UIEdgeInsets(top: 20, left: 20, bottom: 0, right: 0)
           )
           
           displayScrollView.heightAnchor.constraint(equalTo: mainStack.heightAnchor, multiplier: 0.45).isActive = true
@@ -189,17 +175,5 @@ class CalculatorView: UIView {
         
         return button
     }
-    
-    // MARK: Theme Button
-    private func setupThemeButton() {
-        addSubview(themeButton)
-        themeButton.addTarget(self, action: #selector(toggleTheme), for: .touchUpInside)
-    }
-    
-    @objc private func toggleTheme() {
-        isDarkMode.toggle()
-        let newStyle: UIUserInterfaceStyle = isDarkMode ? .dark : .light
-        guard let window = window else { return }
-        window.overrideUserInterfaceStyle = newStyle
-    }
+   
 }

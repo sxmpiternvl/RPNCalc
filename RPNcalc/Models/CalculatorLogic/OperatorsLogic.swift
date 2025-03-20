@@ -1,10 +1,8 @@
 import Foundation
 
-protocol OperatorsLogicProtocol {
-    func addOperator(_ op: String, currentState state: inout ExpressionState)
-}
-
 class OperatorsLogic: OperatorsLogicProtocol {
+    private let utils = CalculatorUtils()
+    
     func addOperator(_ op: String, currentState state: inout ExpressionState) {
         switch state {
         case .undefined:
@@ -23,7 +21,7 @@ class OperatorsLogic: OperatorsLogicProtocol {
                 } else if last.isNumber || String(last) == ButtonTitle.closeParenthesis.rawValue {
                     expr.append(op)
                     state = .normal(expr)
-                } else if isOperator(last) && op != ButtonTitle.subtract.rawValue {
+                } else if utils.isOperator(last) && op != ButtonTitle.subtract.rawValue {
                     expr.removeLast()
                     expr.append(op)
                     state = .normal(expr)

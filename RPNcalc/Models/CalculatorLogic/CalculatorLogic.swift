@@ -7,22 +7,16 @@ enum ExpressionState {
     case result(String)
 }
 
-protocol CalculatorLogicProtocol {
-    var state: ExpressionState { get }
-    var openParenthesisCount: Int { get }
-    var lastInfixExpression: String { get set }
-    func getExpressionText() -> String
-    func handleInput(_ button: ButtonTitle)
-}
-
 class CalculatorLogic: CalculatorLogicProtocol {
     var openParenthesisCount: Int = 0
     var lastInfixExpression: String = ""
+    var history: [HistoryEntry] = []
     private(set) var state: ExpressionState = .empty
     private let numbersLogic = NumbersLogic()
     private let operatorsLogic = OperatorsLogic()
     private let parenthesisLogic = ParenthesisLogic()
-    
+    private let utils = CalculatorUtils()
+
     func getExpressionText() -> String {
         switch state {
         case .empty:
@@ -89,7 +83,7 @@ class CalculatorLogic: CalculatorLogicProtocol {
         
         var expressionToEvaluate = expr
         
-        if let last = expressionToEvaluate.last, isOperator(last) {
+        if let last = expressionToEvaluate.last, utils.isOperator(last) {
             expressionToEvaluate.removeLast()
         }
         
@@ -98,24 +92,25 @@ class CalculatorLogic: CalculatorLogicProtocol {
             openParenthesisCount = 0
         }
         
-        print("Infix expression: \(expressionToEvaluate)")
-        
-        if let resultStr = evaluate(expressionToEvaluate) {
-            lastInfixExpression = expr
-            state = .result(resultStr)
-        } else {
-            state = .undefined
-        }
-    }
-    
-    private func evaluate(_ expression: String) -> String? {
-        let preparedExpression = prepareExpression(expression)
+        let preparedExpression = utils.prepareExpression(expressionToEvaluate)
         let rpn = RPNConverter.infixToRPN(preparedExpression)
-        let result = RPNEvaluator.evaluate(rpn)
-        if result.isNaN {
-            return nil
+        let resultValue = RPNEvaluator.evaluate(rpn)
+        
+        guard !resultValue.isNaN else {
+            state = .undefined
+            return
         }
-        return formatNumber(result, toPlaces: 8)
+        
+        let resultStr = utils.formatNumber(resultValue, toPlaces: 8)
+        
+        let rpnForHistory = RPNConverter.infixToRPN(preparedExpression)
+        let rpnExpression = rpnForHistory.joined(separator: " ")
+        
+        let entry = HistoryEntry(infixExpression: expr, rpnExpression: rpnExpression, result: resultStr)
+        history.append(entry)        
+        lastInfixExpression = expr
+
+        state = .result(resultStr)
     }
-    
+
 }
