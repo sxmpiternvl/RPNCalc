@@ -81,6 +81,7 @@ class CalculatorLogic: CalculatorLogicProtocol {
     
     private func allClear() {
         state = .empty
+        lastInfixExpression = ""
         openParenthesisCount = 0
     }
     

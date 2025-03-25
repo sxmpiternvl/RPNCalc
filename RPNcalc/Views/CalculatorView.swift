@@ -1,13 +1,15 @@
-
 import UIKit
 
-struct HistoryEntry: Codable {
-    let infixExpression: String
-    let rpnExpression: String
-    let result: String
+// MARK: - Делегат CalculatorViewDelegate
+
+protocol CalculatorViewDelegate: AnyObject {
+    func calculatorViewDidTapButton(didTapButton button: ButtonTitle)
+    func calculatorViewDidLongPressClear()
 }
 
 class CalculatorView: UIView {
+    
+    weak var delegate: CalculatorViewDelegate?
     
     var dynamicClearButton: UIButton?
     
@@ -71,29 +73,33 @@ class CalculatorView: UIView {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         translatesAutoresizingMaskIntoConstraints = false
         setupViews()
         setupButtons()
         setupConstraints()
+        setupLongPressForClearButton()
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
     
+    // MARK: - Setup Methods
+    
     private func setupViews() {
         addSubview(mainStack)
+        
         mainStack.addArrangedSubview(displayScrollView)
         mainStack.addArrangedSubview(buttonsContainer)
+        
         displayScrollView.addSubview(displayLabelContainer)
         displayLabelContainer.addSubview(historyLabel)
         displayLabelContainer.addSubview(displayLabel)
     }
     
-    //MARK: Constraints
     private func setupConstraints() {
         mainStack.anchor(
             top: safeAreaLayoutGuide.topAnchor,
@@ -102,21 +108,21 @@ class CalculatorView: UIView {
             trailing: trailingAnchor
         )
         
+        displayScrollView.heightAnchor.constraint(equalTo: mainStack.heightAnchor, multiplier: .x044).isActive = true
+        
         displayLabelContainer.anchor(
             top: displayScrollView.contentLayoutGuide.topAnchor,
             leading: displayScrollView.contentLayoutGuide.leadingAnchor,
             bottom: displayScrollView.contentLayoutGuide.bottomAnchor,
             trailing: displayScrollView.contentLayoutGuide.trailingAnchor
         )
-        
         displayLabelContainer.heightAnchor.constraint(equalTo: displayScrollView.frameLayoutGuide.heightAnchor).isActive = true
         displayLabelContainer.widthAnchor.constraint(greaterThanOrEqualTo: displayScrollView.frameLayoutGuide.widthAnchor).isActive = true
         
         historyLabel.anchor(
-            top: nil,
             leading: displayLabelContainer.leadingAnchor,
             trailing: displayLabelContainer.trailingAnchor,
-            padding: UIEdgeInsets(top: .x1, left: .x1, bottom: .x1, right: .x1)
+            padding: UIEdgeInsets(top: 0, left: .x2, bottom: .x2, right: .x2)
         )
         
         displayLabel.anchor(
@@ -124,16 +130,16 @@ class CalculatorView: UIView {
             leading: displayLabelContainer.leadingAnchor,
             bottom: displayLabelContainer.bottomAnchor,
             trailing: displayLabelContainer.trailingAnchor,
-            padding: UIEdgeInsets(top: .x1, left: .x1, bottom: .x1, right: .x1)
+            padding: UIEdgeInsets(top: .x1, left: .x2, bottom: .x2, right: .x2)
         )
         
-        displayScrollView.heightAnchor.constraint(equalTo: mainStack.heightAnchor, multiplier: .x044).isActive = true
     }
-
-    //MARK: Buttons Row
+    
     private func setupButtons() {
+        // Для каждого ряда кнопок создаем горизонтальный стек
         buttonTitles.forEach { row in
-            buttonsContainer.addArrangedSubview(createButtonRow(row))
+            let rowStack = createButtonRow(row)
+            buttonsContainer.addArrangedSubview(rowStack)
         }
     }
     
@@ -149,17 +155,17 @@ class CalculatorView: UIView {
             if (buttonTitle == .allClear || buttonTitle == .backspace) && dynamicClearButton == nil {
                 dynamicClearButton = button
             }
+            button.addTarget(self, action: #selector(buttonTappedInView(_:)), for: .touchUpInside)
             rowStack.addArrangedSubview(button)
         }
         return rowStack
     }
     
-    //MARK: Create Buttons
     private func createButton(_ buttonTitle: ButtonTitle) -> UIButton {
         let button = UIButton(type: .system)
         button.setTitle(buttonTitle.rawValue, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: .x3, weight: .bold)
-        button.layer.cornerRadius = .x1
+        button.layer.cornerRadius = .x2
         
         switch buttonTitle {
         case .add, .subtract, .multiply, .divide, .power, .openParenthesis, .closeParenthesis:
@@ -178,5 +184,28 @@ class CalculatorView: UIView {
         
         return button
     }
-   
+    
+    // MARK: - Handling Long Press for Clear Button
+    
+    private func setupLongPressForClearButton() {
+        if let clearButton = dynamicClearButton {
+            let longPress = UILongPressGestureRecognizer(target: self, action: #selector(longPressClearInView(_:)))
+            clearButton.addGestureRecognizer(longPress)
+        }
+    }
+    
+    @objc private func longPressClearInView(_ sender: UILongPressGestureRecognizer) {
+        if sender.state == .began {
+            delegate?.calculatorViewDidLongPressClear()
+        }
+    }
+    
+    // MARK: - Handling Button Tap
+    
+    @objc private func buttonTappedInView(_ sender: UIButton) {
+        guard let title = sender.currentTitle,
+              let button = ButtonTitle(rawValue: title) else { return }
+        delegate?.calculatorViewDidTapButton(didTapButton: button)
+    }
+    
 }

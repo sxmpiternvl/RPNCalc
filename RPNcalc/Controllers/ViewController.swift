@@ -1,7 +1,6 @@
-
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, CalculatorViewDelegate {    
     
     private let calculatorView = CalculatorView()
     private var logic: CalculatorLogicProtocol = CalculatorLogic()
@@ -10,102 +9,44 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .background
         setupCalculatorView()
-        setupButtonActions()
-        setupLongPressForClearButton()
+        calculatorView.delegate = self
         updateDisplay()
         setupNavigationBarButton()
     }
     
-    private func setupNavigationBarButton() {
-        navigationController?.navigationBar.tintColor = UIColor.textLabel
-        
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "list.bullet"),
-            style: .done,
-            target: self,
-            action: #selector(showHistory)
-        )
-        
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "lightbulb"),
-            style: .done,
-            target: self,
-            action: #selector(toggleTheme)
-        )
-    }
-    
     private func setupCalculatorView() {
         view.addSubview(calculatorView)
-        calculatorView
-            .anchor(top: view.topAnchor, leading: view.leadingAnchor, bottom: view.bottomAnchor,trailing: view.trailingAnchor)
+        calculatorView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            calculatorView.topAnchor.constraint(equalTo: view.topAnchor),
+            calculatorView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            calculatorView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            calculatorView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
     }
     
-    private func setupButtonActions() {
-        let buttons = calculatorView.buttonsContainer.arrangedSubviews
-            .compactMap { $0 as? UIStackView }
-            .flatMap { $0.arrangedSubviews }
-            .compactMap { $0 as? UIButton }
-        
-        buttons.forEach { button in
-            button.addTarget(self, action: #selector(buttonTapped(_:)), for: .touchUpInside)
-        }
-    }
-    
-    
-    @objc func buttonTapped(_ sender: UIButton) {
-        guard let title = sender.currentTitle,
-              let button = ButtonTitle(rawValue: title) else { return }
+    // MARK: - CalculatorViewDelegate Methods
+    func calculatorViewDidTapButton(didTapButton button: ButtonTitle) {
         logic.handleInput(button)
         updateDisplay()
     }
     
-    private func setupLongPressForClearButton() {
-        if let clearButton = calculatorView.dynamicClearButton {
-            let longPress = UILongPressGestureRecognizer(target: self, action: #selector(longPressClear(_:)))
-            clearButton.addGestureRecognizer(longPress)
-        }
+    func calculatorViewDidLongPressClear() {
+        logic.handleInput(.allClear)
+        updateDisplay()
     }
     
-    @objc func longPressClear(_ sender: UILongPressGestureRecognizer) {
-        if sender.state == .began {
-            logic.handleInput(.allClear)
-            updateDisplay()
-        }
-    }
+    
+    // MARK: - Update Display
     
     private func updateDisplay() {
         let expression = logic.getExpressionText()
-        let attributedText = createAttributedText(expression)
+        let attributedText = Utils.createAttributedText(for: expression, count: logic.openParenthesisCount)
         calculatorView.displayLabel.attributedText = attributedText
         updateClearButtonTitle()
         view.layoutIfNeeded()
-        
         updateScrollViewOffset()
         updateHistoryLabel()
-    }
-    
-    private func createAttributedText(_ expression: String) -> NSAttributedString {
-        let NaNString =  NSLocalizedString("historyTitle", comment: "History title")
-        let fontSize: CGFloat = (expression == NaNString) ? .x4 : .x6
-        let font = UIFont.systemFont(ofSize: fontSize, weight: .medium)
-        let mainAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor.textLabel,
-            .font: font
-        ]
-        
-        let attributedText = NSMutableAttributedString(string: expression, attributes: mainAttributes)
-        
-        if logic.openParenthesisCount > 0 {
-            let lightText = String(repeating: ")", count: logic.openParenthesisCount)
-            let lightAttributes: [NSAttributedString.Key: Any] = [
-                .foregroundColor: UIColor.lightGray,
-                .font: font
-            ]
-            let lightAttributedText = NSAttributedString(string: lightText, attributes: lightAttributes)
-            attributedText.append(lightAttributedText)
-        }
-        
-        return attributedText
     }
     
     private func updateScrollViewOffset() {
@@ -130,6 +71,26 @@ class ViewController: UIViewController {
         }
     }
     
+    // MARK: - Navigation Bar Buttons
+    
+    private func setupNavigationBarButton() {
+        navigationController?.navigationBar.tintColor = UIColor.textLabel
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "list.bullet"),
+            style: .done,
+            target: self,
+            action: #selector(showHistory)
+        )
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "lightbulb"),
+            style: .done,
+            target: self,
+            action: #selector(toggleThemeNav)
+        )
+    }
+    
     @objc private func showHistory() {
         let historyVC = HistoryViewController()
         historyVC.history = logic.history
@@ -140,19 +101,13 @@ class ViewController: UIViewController {
         historyVC.onClearHistory = { [weak self] in
             self?.logic.history.removeAll()
         }
-        let navigationViewController = UINavigationController(rootViewController: historyVC)
-        navigationViewController.modalPresentationStyle = .pageSheet
-        present(navigationViewController, animated: true, completion: nil)
+        let navVC = UINavigationController(rootViewController: historyVC)
+        navVC.modalPresentationStyle = .pageSheet
+        present(navVC, animated: true, completion: nil)
     }
     
-    @objc private func toggleTheme() {
-        guard let window = view.window else { return }
-        let currentStyle = (window.overrideUserInterfaceStyle == .unspecified)
-        ? traitCollection.userInterfaceStyle
-        : window.overrideUserInterfaceStyle
-        let newStyle: UIUserInterfaceStyle = (currentStyle == .dark) ? .light : .dark
-        window.overrideUserInterfaceStyle = newStyle
+    @objc private func toggleThemeNav() {
+        Utils.toggleColorScheme(view: view)
     }
-    
     
 }

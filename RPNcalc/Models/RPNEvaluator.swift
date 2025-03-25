@@ -1,10 +1,6 @@
 
 import Foundation
 
-protocol RPNEvaluatorProtocol {
-    static func evaluate(_ rpn: [String]) -> Double
-}
-
 struct RPNEvaluator: RPNEvaluatorProtocol {
     static func evaluate(_ rpn: [String]) -> Double {
         var stack = [Double]()
