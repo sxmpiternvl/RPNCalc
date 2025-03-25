@@ -1,3 +1,4 @@
+
 import UIKit
 
 extension CGFloat {
@@ -7,4 +8,9 @@ extension CGFloat {
     static let x4: CGFloat = 40
     static let x5: CGFloat = 50
     static let x6: CGFloat = 60
+    static let x7: CGFloat = 70
+    static let x8: CGFloat = 80
+    static let x9: CGFloat = 90
+    
+    static let x044: CGFloat = 0.44
 }

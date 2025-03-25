@@ -1,10 +1,10 @@
+
 import UIKit
 
 class ViewController: UIViewController {
     
     private let calculatorView = CalculatorView()
     private var logic: CalculatorLogicProtocol = CalculatorLogic()
-    private var isDarkMode = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -17,6 +17,8 @@ class ViewController: UIViewController {
     }
     
     private func setupNavigationBarButton() {
+        navigationController?.navigationBar.tintColor = UIColor.textLabel
+        
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "list.bullet"),
             style: .done,
@@ -28,9 +30,7 @@ class ViewController: UIViewController {
             image: UIImage(systemName: "lightbulb"),
             style: .done,
             target: self,
-            action: #selector(
-                toggleTheme
-            )
+            action: #selector(toggleTheme)
         )
     }
     
@@ -76,7 +76,7 @@ class ViewController: UIViewController {
     
     private func updateDisplay() {
         let expression = logic.getExpressionText()
-        let attributedText = createAttributedText(for: expression)
+        let attributedText = createAttributedText(expression)
         calculatorView.displayLabel.attributedText = attributedText
 
         updateClearButtonTitle()
@@ -86,12 +86,13 @@ class ViewController: UIViewController {
         updateHistoryLabel()
     }
 
-    private func createAttributedText(for expression: String) -> NSAttributedString {
+    
+    private func createAttributedText(_ expression: String) -> NSAttributedString {
         let NaNString =  NSLocalizedString("historyTitle", comment: "History title")
         let fontSize: CGFloat = (expression == NaNString) ? .x4 : .x6
         let font = UIFont.systemFont(ofSize: fontSize, weight: .medium)
         let mainAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor.white,
+            .foregroundColor: UIColor.textLabel,
             .font: font
         ]
         
@@ -148,11 +149,15 @@ class ViewController: UIViewController {
     }
     
     @objc private func toggleTheme() {
-        isDarkMode.toggle()
-        let newStyle: UIUserInterfaceStyle = isDarkMode ? .dark : .light
         guard let window = view.window else { return }
+        let currentStyle = (window.overrideUserInterfaceStyle == .unspecified)
+            ? traitCollection.userInterfaceStyle
+            : window.overrideUserInterfaceStyle
+        let newStyle: UIUserInterfaceStyle = (currentStyle == .dark) ? .light : .dark
         window.overrideUserInterfaceStyle = newStyle
     }
+
     
 }
+
 

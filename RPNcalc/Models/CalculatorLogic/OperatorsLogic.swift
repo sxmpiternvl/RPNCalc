@@ -1,7 +1,12 @@
+
 import Foundation
 
 class OperatorsLogic: OperatorsLogicProtocol {
-    private let utils = CalculatorUtils()
+    private let utils: CalculatorUtilsProtocol
+    
+    init(utils: CalculatorUtilsProtocol = CalculatorUtils()) {
+        self.utils = utils
+    }
     
     func addOperator(_ op: String, currentState state: inout ExpressionState) {
         switch state {
@@ -12,30 +17,26 @@ class OperatorsLogic: OperatorsLogicProtocol {
         case .result(let val):
             state = .normal(val + op)
         case .normal(var expr):
-            guard let last = expr.last else {
-                expr.append(op)
-                state = .normal(expr)
-                return
-            }
+            guard let last = expr.last else { return }
             switch last {
             case Character(ButtonTitle.openParenthesis.rawValue):
                 if op == ButtonTitle.subtract.rawValue {
                     expr.append(op)
                 }
                 state = .normal(expr)
-            case let ch where ch.isNumber:
+            case _ where last.isNumber:
                 expr.append(op)
                 state = .normal(expr)
-            case let ch where utils.isOperator(ch):
-                if op == ButtonTitle.subtract.rawValue {
-                    if ch != Character(ButtonTitle.subtract.rawValue) {
-                        expr.append(op)
-                    }
+            case _ where utils.isOperator(last):
+                if op == ButtonTitle.subtract.rawValue && last != Character(ButtonTitle.subtract.rawValue) {
+                    expr.append(op)
                 } else {
                     expr.removeLast()
                     expr.append(op)
                 }
                 state = .normal(expr)
+            case _ where last == Character(ButtonTitle.decimalSeparator.rawValue):
+                return
             default:
                 expr.append(op)
                 state = .normal(expr)

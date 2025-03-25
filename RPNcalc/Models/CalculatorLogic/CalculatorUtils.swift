@@ -1,29 +1,39 @@
+
 import Foundation
 
 struct CalculatorUtils: CalculatorUtilsProtocol {
     
     func prepareExpression(_ input: String) -> [String] {
-        var result = input
-        result = result.replacingOccurrences(of: "÷", with: "/")
-        result = result.replacingOccurrences(of: "×", with: "*")
-        
+        let result = input.replacingOccurrences(of: "÷", with: "/")
+                          .replacingOccurrences(of: "×", with: "*")
         var output: [String] = []
-        let chars = result.split(separator: "")
-        for i in 0..<chars.count {
+        let chars = Array(result)
+        var i = 0
+        while i < chars.count {
             let char = chars[i]
             switch char {
             case "-":
-                if i == 0 || chars[i - 1] == "(" {
-                    output.append("0")
+                if i == 0 || chars[i - 1] == "(" || isOperator(chars[i - 1]) {
+                    output.append(ButtonTitle.openParenthesis.rawValue)
+                    output.append(ButtonTitle.zero.rawValue)
+                    output.append(String(char))
+                    i += 1
+                    while i < chars.count, chars[i].isNumber || String(chars[i]) == ButtonTitle.decimalSeparator.rawValue {
+                        output.append(String(chars[i]))
+                        i += 1
+                    }
+                    output.append(ButtonTitle.closeParenthesis.rawValue)
+                    continue
                 }
                 output.append(String(char))
+                i += 1
             default:
                 output.append(String(char))
+                i += 1
             }
         }
         return output
     }
-    
     
     func formatNumber(_ value: Double, toPlaces places: Int) -> String {
         let intMax = 1e10
@@ -40,8 +50,8 @@ struct CalculatorUtils: CalculatorUtilsProtocol {
         }
     }
     
-    
     func isOperator(_ char: Character) -> Bool {
         return ["+", "-", "*", "/", "^", "×", "÷"].contains(String(char))
     }
+    
 }

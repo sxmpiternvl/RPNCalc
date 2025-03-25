@@ -1,3 +1,4 @@
+
 class NumbersLogic: NumbersLogicProtocol {
     private let utils: CalculatorUtilsProtocol
     
@@ -10,11 +11,7 @@ class NumbersLogic: NumbersLogicProtocol {
         case .undefined, .empty, .result(_):
             state = .normal(digit)
         case .normal(let expression):
-            if digit == ButtonTitle.zero.rawValue && expression == ButtonTitle.zero.rawValue {
-                state = .normal(digit)
-            } else {
-                state = .normal(expression + digit)
-            }
+            state = .normal(updateCurrentOperand(expression, with: digit))
         }
     }
     
@@ -28,8 +25,8 @@ class NumbersLogic: NumbersLogicProtocol {
                 return
             }
             switch last {
-            case let ch where ch == Character(ButtonTitle.openParenthesis.rawValue)
-                             || CalculatorUtils().isOperator(ch):
+            case _ where last == Character(ButtonTitle.openParenthesis.rawValue)
+                || utils.isOperator(last):
                 state = .normal(expr + ButtonTitle.zero.rawValue + ButtonTitle.decimalSeparator.rawValue)
             default:
                 let currentNumber = extractCurrentNumber(from: expr)
@@ -43,10 +40,19 @@ class NumbersLogic: NumbersLogicProtocol {
         }
     }
 
-    private func shouldPrependZeroForDecimal(after char: Character) -> Bool {
-        return String(char) == ButtonTitle.openParenthesis.rawValue || CalculatorUtils().isOperator(char)
+    
+    func updateCurrentOperand(_ expression: String, with digit: String) -> String {
+        let currentOperand = extractCurrentNumber(from: expression)
+        if currentOperand == "0" {
+            return digit == ButtonTitle.zero.rawValue
+                ? expression
+                : String(expression.dropLast(currentOperand.count)) + digit
+        } else {
+            return expression + digit
+        }
     }
-
+    
+    
     private func extractCurrentNumber(from expression: String) -> String {
         var currentNumber = ""
         for char in expression.reversed() {
@@ -58,7 +64,6 @@ class NumbersLogic: NumbersLogicProtocol {
         }
         return String(currentNumber.reversed())
     }
-
     
- 
+    
 }

@@ -1,3 +1,4 @@
+
 import UIKit
 
 class HistoryViewController: UIViewController {
@@ -63,7 +64,7 @@ class HistoryViewController: UIViewController {
     }
 }
 
-// MARK: - UITableViewDataSource
+// MARK: UITableViewDataSource
 
 extension HistoryViewController: UITableViewDataSource {
     
@@ -88,7 +89,7 @@ extension HistoryViewController: UITableViewDataSource {
     }
 }
 
-// MARK: - UITableViewDelegate
+// MARK: UITableViewDelegate
 
 extension HistoryViewController: UITableViewDelegate {
     
@@ -100,4 +101,5 @@ extension HistoryViewController: UITableViewDelegate {
             tableView.deleteRows(at: [indexPath], with: .automatic)
         }
     }
+    
 }

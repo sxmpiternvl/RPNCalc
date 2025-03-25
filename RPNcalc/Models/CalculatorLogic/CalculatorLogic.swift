@@ -1,3 +1,4 @@
+
 import Foundation
 
 enum ExpressionState {
@@ -87,7 +88,7 @@ class CalculatorLogic: CalculatorLogicProtocol {
         guard case .normal(let expr) = state else { return }
         guard expr.filter({ $0.isNumber }).count >= 2 else { return }
         
-        let cleanedExpression = appendMissingParentheses(removeTrailingOperator(from: expr))
+        let cleanedExpression = appendMissingParentheses(removeTrailingOperator(expr))
         
         let preparedExpression = utils.prepareExpression(cleanedExpression)
         
@@ -95,21 +96,22 @@ class CalculatorLogic: CalculatorLogicProtocol {
         
         let resultValue = RPNEvaluator.evaluate(rpn)
         
-        guard !resultValue.isNaN else {
-            state = .undefined
-            return
-        }
+        if resultValue.isNaN {
+                state = .undefined
+                return
+            }
         
         let resultStr = utils.formatNumber(resultValue, toPlaces: 8)
-        updateHistory(with: cleanedExpression, result: resultStr, preparedExpression: preparedExpression)
         
+        updateHistory(infix: cleanedExpression, result: resultStr, postfix: rpn)
         lastInfixExpression = cleanedExpression
         state = .result(resultStr)
     }
     
-    private func removeTrailingOperator(from expression: String) -> String {
+    private func removeTrailingOperator(_ expression: String) -> String {
         var expr = expression
-        if let last = expr.last, utils.isOperator(last) {
+        if let last = expr.last, utils.isOperator(last) ||
+            last == Character(ButtonTitle.decimalSeparator.rawValue) {
             expr.removeLast()
         }
         return expr
@@ -125,10 +127,9 @@ class CalculatorLogic: CalculatorLogicProtocol {
         return expr
     }
     
-    private func updateHistory(with originalExpression: String, result: String, preparedExpression: [String]) {
-        let rpn = RPNConverter.infixToRPN(preparedExpression)
+    private func updateHistory(infix infixExp: String, result: String, postfix rpn: [String]) {
         let rpnExpression = rpn.joined(separator: " ")
-        let entry = HistoryEntry(infixExpression: originalExpression, rpnExpression: rpnExpression, result: result)
+        let entry = HistoryEntry(infixExpression: infixExp, rpnExpression: rpnExpression, result: result)
         history.append(entry)
         saveHistory()
     }
@@ -139,7 +140,7 @@ class CalculatorLogic: CalculatorLogicProtocol {
             let data = try encoder.encode(history)
             UserDefaults.standard.set(data, forKey: historyKey)
         } catch {
-            print("Ошибка сохранения истории: \(error)")
+            print("\(error)")
         }
     }
     
@@ -149,7 +150,7 @@ class CalculatorLogic: CalculatorLogicProtocol {
             let decoder = JSONDecoder()
             history = try decoder.decode([HistoryEntry].self, from: data)
         } catch {
-            print("Ошибка загрузки истории: \(error)")
+            print("\(error)")
         }
     }
     

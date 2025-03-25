@@ -1,3 +1,4 @@
+
 import UIKit
 
 struct HistoryEntry: Codable {
@@ -55,21 +56,21 @@ class CalculatorView: UIView {
         stack.alignment = .fill
         stack.distribution = .fillEqually
         stack.spacing = .x1
-        stack.layer.cornerRadius = .x4
-        stack.layoutMargins = UIEdgeInsets(top: .x2, left: .x2, bottom: .x2, right: .x2)
+        stack.layer.cornerRadius = .x2
+        stack.layoutMargins = UIEdgeInsets(top: .x1, left: .x1, bottom: .x1, right: .x1)
         stack.isLayoutMarginsRelativeArrangement = true
         return stack
     }()
     
     let historyLabel: UILabel = {
-            let label = UILabel()
-            label.textColor = .gray
+        let label = UILabel()
+        label.textColor = .gray
         label.font = UIFont.systemFont(ofSize: .x2, weight: .regular)
-            label.textAlignment = .right
-            label.numberOfLines = 1
-            label.translatesAutoresizingMaskIntoConstraints = false
-            return label
-        }()
+        label.textAlignment = .right
+        label.numberOfLines = 1
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -91,6 +92,7 @@ class CalculatorView: UIView {
         displayLabelContainer.addSubview(displayLabel)
     }
     
+    //MARK: Constraints
     private func setupConstraints() {
           mainStack.anchor(
               top: safeAreaLayoutGuide.topAnchor,
@@ -113,7 +115,7 @@ class CalculatorView: UIView {
             top: nil,
             leading: displayLabelContainer.leadingAnchor,
             trailing: displayLabelContainer.trailingAnchor,
-            padding: UIEdgeInsets(top: .x2, left: .x2, bottom: .x2, right: .x2)
+            padding: UIEdgeInsets(top: .x1, left: .x1, bottom: .x1, right: .x1)
         )
           
           displayLabel.anchor(
@@ -124,7 +126,7 @@ class CalculatorView: UIView {
               padding: UIEdgeInsets(top: .x1, left: .x1, bottom: .x1, right: .x1)
           )
           
-          displayScrollView.heightAnchor.constraint(equalTo: mainStack.heightAnchor, multiplier: 0.45).isActive = true
+        displayScrollView.heightAnchor.constraint(equalTo: mainStack.heightAnchor, multiplier: .x044).isActive = true
       }
 
     //MARK: Buttons Row
@@ -155,14 +157,14 @@ class CalculatorView: UIView {
     private func createButton(_ buttonTitle: ButtonTitle) -> UIButton {
         let button = UIButton(type: .system)
         button.setTitle(buttonTitle.rawValue, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 28, weight: .bold)
-        button.layer.cornerRadius = .x2
+        button.titleLabel?.font = UIFont.systemFont(ofSize: .x3, weight: .bold)
+        button.layer.cornerRadius = .x1
         
         switch buttonTitle {
-        case .add, .subtract, .multiply, .divide, .power:
+        case .add, .subtract, .multiply, .divide, .power, .openParenthesis, .closeParenthesis:
             button.backgroundColor = .operationsBackground
             button.setTitleColor(.buttonOperation, for: .normal)
-        case .openParenthesis, .closeParenthesis, .allClear, .backspace:
+        case .allClear, .backspace:
             button.backgroundColor = .aCcolor
             button.setTitleColor(.aCtext, for: .normal)
         case .equals:
