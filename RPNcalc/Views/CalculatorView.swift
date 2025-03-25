@@ -74,6 +74,7 @@ class CalculatorView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        translatesAutoresizingMaskIntoConstraints = false
         setupViews()
         setupButtons()
         setupConstraints()
@@ -94,19 +95,19 @@ class CalculatorView: UIView {
     
     //MARK: Constraints
     private func setupConstraints() {
-          mainStack.anchor(
-              top: safeAreaLayoutGuide.topAnchor,
-              leading: leadingAnchor,
-              bottom: safeAreaLayoutGuide.bottomAnchor,
-              trailing: trailingAnchor
-          )
-          
-          displayLabelContainer.anchor(
-              top: displayScrollView.contentLayoutGuide.topAnchor,
-              leading: displayScrollView.contentLayoutGuide.leadingAnchor,
-              bottom: displayScrollView.contentLayoutGuide.bottomAnchor,
-              trailing: displayScrollView.contentLayoutGuide.trailingAnchor
-          )
+        mainStack.anchor(
+            top: safeAreaLayoutGuide.topAnchor,
+            leading: leadingAnchor,
+            bottom: safeAreaLayoutGuide.bottomAnchor,
+            trailing: trailingAnchor
+        )
+        
+        displayLabelContainer.anchor(
+            top: displayScrollView.contentLayoutGuide.topAnchor,
+            leading: displayScrollView.contentLayoutGuide.leadingAnchor,
+            bottom: displayScrollView.contentLayoutGuide.bottomAnchor,
+            trailing: displayScrollView.contentLayoutGuide.trailingAnchor
+        )
         
         displayLabelContainer.heightAnchor.constraint(equalTo: displayScrollView.frameLayoutGuide.heightAnchor).isActive = true
         displayLabelContainer.widthAnchor.constraint(greaterThanOrEqualTo: displayScrollView.frameLayoutGuide.widthAnchor).isActive = true
@@ -117,17 +118,17 @@ class CalculatorView: UIView {
             trailing: displayLabelContainer.trailingAnchor,
             padding: UIEdgeInsets(top: .x1, left: .x1, bottom: .x1, right: .x1)
         )
-          
-          displayLabel.anchor(
-              top: historyLabel.bottomAnchor,
-              leading: displayLabelContainer.leadingAnchor,
-              bottom: displayLabelContainer.bottomAnchor,
-              trailing: displayLabelContainer.trailingAnchor,
-              padding: UIEdgeInsets(top: .x1, left: .x1, bottom: .x1, right: .x1)
-          )
-          
+        
+        displayLabel.anchor(
+            top: historyLabel.bottomAnchor,
+            leading: displayLabelContainer.leadingAnchor,
+            bottom: displayLabelContainer.bottomAnchor,
+            trailing: displayLabelContainer.trailingAnchor,
+            padding: UIEdgeInsets(top: .x1, left: .x1, bottom: .x1, right: .x1)
+        )
+        
         displayScrollView.heightAnchor.constraint(equalTo: mainStack.heightAnchor, multiplier: .x044).isActive = true
-      }
+    }
 
     //MARK: Buttons Row
     private func setupButtons() {

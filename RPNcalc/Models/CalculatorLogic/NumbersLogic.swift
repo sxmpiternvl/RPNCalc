@@ -11,9 +11,22 @@ class NumbersLogic: NumbersLogicProtocol {
         case .undefined, .empty, .result(_):
             state = .normal(digit)
         case .normal(let expression):
-            state = .normal(updateCurrentOperand(expression, with: digit))
+            state = .normal(updateCurrentNumber(expression, with: digit))
         }
     }
+    
+    
+    func updateCurrentNumber(_ expression: String, with digit: String) -> String {
+        let currentOperand = extractCurrentNumber(from: expression)
+        if currentOperand == "0" {
+            return digit == ButtonTitle.zero.rawValue
+                ? expression
+                : String(expression.dropLast(currentOperand.count)) + digit
+        } else {
+            return expression + digit
+        }
+    }
+    
     
     func addDecimalPoint(currentState state: inout ExpressionState) {
         switch state {
@@ -37,18 +50,6 @@ class NumbersLogic: NumbersLogicProtocol {
                     state = .normal(expr + ButtonTitle.decimalSeparator.rawValue)
                 }
             }
-        }
-    }
-
-    
-    func updateCurrentOperand(_ expression: String, with digit: String) -> String {
-        let currentOperand = extractCurrentNumber(from: expression)
-        if currentOperand == "0" {
-            return digit == ButtonTitle.zero.rawValue
-                ? expression
-                : String(expression.dropLast(currentOperand.count)) + digit
-        } else {
-            return expression + digit
         }
     }
     

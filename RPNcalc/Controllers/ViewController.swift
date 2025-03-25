@@ -36,7 +36,6 @@ class ViewController: UIViewController {
     
     private func setupCalculatorView() {
         view.addSubview(calculatorView)
-        calculatorView.translatesAutoresizingMaskIntoConstraints = false
         calculatorView
             .anchor(top: view.topAnchor, leading: view.leadingAnchor, bottom: view.bottomAnchor,trailing: view.trailingAnchor)
     }
@@ -78,14 +77,12 @@ class ViewController: UIViewController {
         let expression = logic.getExpressionText()
         let attributedText = createAttributedText(expression)
         calculatorView.displayLabel.attributedText = attributedText
-
         updateClearButtonTitle()
         view.layoutIfNeeded()
         
         updateScrollViewOffset()
         updateHistoryLabel()
     }
-
     
     private func createAttributedText(_ expression: String) -> NSAttributedString {
         let NaNString =  NSLocalizedString("historyTitle", comment: "History title")
@@ -110,12 +107,12 @@ class ViewController: UIViewController {
         
         return attributedText
     }
-
+    
     private func updateScrollViewOffset() {
         let maxOffsetX = max(0, calculatorView.displayScrollView.contentSize.width - calculatorView.displayScrollView.bounds.width)
         calculatorView.displayScrollView.setContentOffset(CGPoint(x: maxOffsetX, y: 0), animated: false)
     }
-
+    
     private func updateHistoryLabel() {
         if !logic.lastInfixExpression.isEmpty {
             calculatorView.historyLabel.text = logic.lastInfixExpression
@@ -151,13 +148,11 @@ class ViewController: UIViewController {
     @objc private func toggleTheme() {
         guard let window = view.window else { return }
         let currentStyle = (window.overrideUserInterfaceStyle == .unspecified)
-            ? traitCollection.userInterfaceStyle
-            : window.overrideUserInterfaceStyle
+        ? traitCollection.userInterfaceStyle
+        : window.overrideUserInterfaceStyle
         let newStyle: UIUserInterfaceStyle = (currentStyle == .dark) ? .light : .dark
         window.overrideUserInterfaceStyle = newStyle
     }
-
+    
     
 }
-
-
