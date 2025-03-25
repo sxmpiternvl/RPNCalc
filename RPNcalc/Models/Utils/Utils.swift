@@ -1,9 +1,3 @@
-//
-//  utils.swift
-//  RPNcalc
-//
-//  Created by Dmitriy An on 25/03/25.
-//
 
 import UIKit
 
