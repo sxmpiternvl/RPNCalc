@@ -28,11 +28,21 @@ class OperatorsLogic: OperatorsLogicProtocol {
                 expr.append(op)
                 state = .normal(expr)
             case _ where utils.isOperator(last):
-                if utils.isOperator(last) {
+                let isSubtract = last == Character(ButtonTitle.subtract.rawValue)
+                let isUnaryMinus = isSubtract && (expr.count == 1 || expr.dropLast().last == "(")
+                
+                if isUnaryMinus {
+                    if op == "-" {
+                        state = .normal(expr)
+                    } else {
+                        expr.removeLast()
+                        state = expr.isEmpty ? .empty : .normal(expr)
+                    }
+                } else {
                     expr.removeLast()
+                    expr.append(op)
+                    state = .normal(expr)
                 }
-                expr.append(op)
-                state = .normal(expr)
             case _ where last == Character(ButtonTitle.decimalSeparator.rawValue):
                 return
             default:
