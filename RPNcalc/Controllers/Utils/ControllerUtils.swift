@@ -1,7 +1,7 @@
 
 import UIKit
 
-struct Utils {
+struct ControllerUtils {
     
     static func toggleColorTheme(view: UIView) {
         guard let window = view.window else { return }

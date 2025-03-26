@@ -41,7 +41,7 @@ class ViewController: UIViewController, CalculatorViewDelegate {
     
     private func updateDisplay() {
         let expression = logic.getExpressionText()
-        let attributedText = Utils.createAttributedText(for: expression, count: logic.openParenthesisCount)
+        let attributedText = ControllerUtils.createAttributedText(for: expression, count: logic.openParenthesisCount)
         calculatorView.displayLabel.attributedText = attributedText
         updateClearButtonTitle()
         view.layoutIfNeeded()
@@ -99,7 +99,7 @@ class ViewController: UIViewController, CalculatorViewDelegate {
     }
     
     @objc private func toggleThemeNav() {
-        Utils.toggleColorTheme(view: view)
+        ControllerUtils.toggleColorTheme(view: view)
     }
     
 }
