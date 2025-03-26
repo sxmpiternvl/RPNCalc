@@ -3,7 +3,7 @@ import UIKit
 
 struct Utils {
     
-    static func toggleColorScheme(view: UIView) {
+    static func toggleColorTheme(view: UIView) {
         guard let window = view.window else { return }
         let currentStyle = window.overrideUserInterfaceStyle == .unspecified ? view.traitCollection.userInterfaceStyle : window.overrideUserInterfaceStyle
         let newStyle: UIUserInterfaceStyle = (currentStyle == .dark) ? .light : .dark
@@ -13,7 +13,7 @@ struct Utils {
     
     static func createAttributedText(for expression: String, count openParenthesisCount: Int) -> NSAttributedString {
         let NaNString = NSLocalizedString("historyTitle", comment: "History title")
-        let fontSize: CGFloat = (expression == NaNString) ? .x4 : .x6
+        let fontSize: CGFloat = (expression == NaNString || expression.contains("e")) ? .x4 : .x6
         let font = UIFont.systemFont(ofSize: fontSize, weight: .medium)
         let mainAttributes: [NSAttributedString.Key: Any] = [
             .foregroundColor: UIColor.textLabel,

@@ -14,16 +14,7 @@ struct CalculatorUtils: CalculatorUtilsProtocol {
             switch char {
             case "-":
                 if i == 0 || chars[i - 1] == "(" || isOperator(chars[i - 1]) {
-                    output.append(ButtonTitle.openParenthesis.rawValue)
                     output.append(ButtonTitle.zero.rawValue)
-                    output.append(String(char))
-                    i += 1
-                    while i < chars.count, chars[i].isNumber || String(chars[i]) == ButtonTitle.decimalSeparator.rawValue {
-                        output.append(String(chars[i]))
-                        i += 1
-                    }
-                    output.append(ButtonTitle.closeParenthesis.rawValue)
-                    continue
                 }
                 output.append(String(char))
                 i += 1
@@ -35,14 +26,13 @@ struct CalculatorUtils: CalculatorUtilsProtocol {
         return output
     }
     
-    func formatNumber(_ value: Double, toPlaces places: Int) -> String {
+    func formatNumber(_ value: Double) -> String {
         let intMax = 1e10
         let intMin = 1e-10
         if abs(value) >= intMax || (abs(value) < intMin && value != 0) {
             return String(format: "%e", value)
         }
-        let multiplier = pow(10.0, Double(places))
-        let roundedValue = (value * multiplier).rounded() / multiplier
+        let roundedValue = (value * 1e8).rounded() / 1e8
         if roundedValue.truncatingRemainder(dividingBy: 1) == 0 {
             return "\(Int(roundedValue))"
         } else {

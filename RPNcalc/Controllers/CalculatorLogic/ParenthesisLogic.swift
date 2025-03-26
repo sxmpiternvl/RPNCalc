@@ -10,6 +10,7 @@ class ParenthesisLogic:ParenthesisLogicProtocol {
             state = .normal(ButtonTitle.openParenthesis.rawValue)
             openParenthesisCount = 1
         case .normal(var expr):
+            guard let last = expr.last, String(last) != ButtonTitle.decimalSeparator.rawValue else { return }
             if let last = expr.last, last.isNumber || String(last) == ButtonTitle.closeParenthesis.rawValue {
                 expr.append(ButtonTitle.multiply.rawValue)
             }

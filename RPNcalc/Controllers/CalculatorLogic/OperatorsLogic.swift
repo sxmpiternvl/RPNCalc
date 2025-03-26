@@ -28,12 +28,10 @@ class OperatorsLogic: OperatorsLogicProtocol {
                 expr.append(op)
                 state = .normal(expr)
             case _ where utils.isOperator(last):
-                if op == ButtonTitle.subtract.rawValue && last != Character(ButtonTitle.subtract.rawValue) {
-                    expr.append(op)
-                } else {
+                if utils.isOperator(last) {
                     expr.removeLast()
-                    expr.append(op)
                 }
+                expr.append(op)
                 state = .normal(expr)
             case _ where last == Character(ButtonTitle.decimalSeparator.rawValue):
                 return

@@ -93,21 +93,13 @@ class ViewController: UIViewController, CalculatorViewDelegate {
     
     @objc private func showHistory() {
         let historyVC = HistoryViewController()
-        historyVC.history = logic.history
-        
-        historyVC.onDeleteEntry = { [weak self] index in
-            self?.logic.history.remove(at: index)
-        }
-        historyVC.onClearHistory = { [weak self] in
-            self?.logic.history.removeAll()
-        }
         let navVC = UINavigationController(rootViewController: historyVC)
         navVC.modalPresentationStyle = .pageSheet
         present(navVC, animated: true, completion: nil)
     }
     
     @objc private func toggleThemeNav() {
-        Utils.toggleColorScheme(view: view)
+        Utils.toggleColorTheme(view: view)
     }
     
 }

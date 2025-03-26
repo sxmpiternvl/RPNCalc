@@ -1,12 +1,12 @@
 import UIKit
 
-// MARK: - Делегат CalculatorViewDelegate
-
+// MARK: - CalculatorViewDelegate
 protocol CalculatorViewDelegate: AnyObject {
     func calculatorViewDidTapButton(didTapButton button: ButtonTitle)
     func calculatorViewDidLongPressClear()
 }
 
+// MARK: - UIVIEW
 class CalculatorView: UIView {
     
     weak var delegate: CalculatorViewDelegate?
@@ -55,10 +55,9 @@ class CalculatorView: UIView {
         let stack = UIStackView()
         stack.backgroundColor = .backgroundButtons
         stack.axis = .vertical
-        stack.alignment = .fill
         stack.distribution = .fillEqually
         stack.spacing = .x1
-        stack.layer.cornerRadius = .x2
+        stack.layer.cornerRadius = .x4
         stack.layoutMargins = UIEdgeInsets(top: .x1, left: .x1, bottom: .x1, right: .x1)
         stack.isLayoutMarginsRelativeArrangement = true
         return stack
@@ -136,7 +135,6 @@ class CalculatorView: UIView {
     }
     
     private func setupButtons() {
-        // Для каждого ряда кнопок создаем горизонтальный стек
         buttonTitles.forEach { row in
             let rowStack = createButtonRow(row)
             buttonsContainer.addArrangedSubview(rowStack)
@@ -147,7 +145,6 @@ class CalculatorView: UIView {
         let rowStack = UIStackView()
         rowStack.axis = .horizontal
         rowStack.spacing = .x1
-        rowStack.alignment = .fill
         rowStack.distribution = .fillEqually
         
         titles.forEach { buttonTitle in
@@ -185,7 +182,7 @@ class CalculatorView: UIView {
         return button
     }
     
-    // MARK: - Handling Long Press for Clear Button
+    // MARK: - Long Press for Clear 
     
     private func setupLongPressForClearButton() {
         if let clearButton = dynamicClearButton {

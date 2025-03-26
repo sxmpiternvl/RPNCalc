@@ -3,9 +3,8 @@ import UIKit
 
 class HistoryViewController: UIViewController {
     
-    var history: [HistoryEntry] = []
-    var onDeleteEntry: ((Int) -> Void)?
-    var onClearHistory: (() -> Void)?
+    private let userDefaultsManager = UserDefaultManager()
+    private var history: [HistoryEntry] = []
     
     private let tableView: UITableView = {
         let tableView = UITableView()
@@ -15,6 +14,7 @@ class HistoryViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        getHistory()
         setupHistoryViewController()
         setupConstraints()
         setupNavigationBarButton()
@@ -54,13 +54,18 @@ class HistoryViewController: UIViewController {
     }
     
     @objc func clearHistory() {
-        onClearHistory?()
         history.removeAll()
+        userDefaultsManager.clearHistory()
+        getHistory()
         tableView.reloadData()
     }
     
     @objc func done() {
         dismiss(animated: true, completion: nil)
+    }
+    
+    private func getHistory() {
+        history = userDefaultsManager.getHistory()
     }
 }
 
@@ -96,8 +101,9 @@ extension HistoryViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle,
                    forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            onDeleteEntry?(indexPath.row)
+            let model = history[indexPath.row]
             history.remove(at: indexPath.row)
+            userDefaultsManager.removeHistory(with: model.id)
             tableView.deleteRows(at: [indexPath], with: .automatic)
         }
     }

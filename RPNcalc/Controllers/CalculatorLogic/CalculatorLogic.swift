@@ -10,13 +10,10 @@ enum ExpressionState {
 
 class CalculatorLogic: CalculatorLogicProtocol {
     
-    init() {
-        loadHistory()
-    }
-    
+    private let userDefaultsManager = UserDefaultManager()
+
     var openParenthesisCount: Int = 0
     var lastInfixExpression: String = ""
-    var history: [HistoryEntry] = []
     private(set) var state: ExpressionState = .empty
     private let numbersLogic = NumbersLogic()
     private let operatorsLogic = OperatorsLogic()
@@ -102,7 +99,7 @@ class CalculatorLogic: CalculatorLogicProtocol {
                 return
             }
         
-        let resultStr = utils.formatNumber(resultValue, toPlaces: 8)
+        let resultStr = utils.formatNumber(resultValue)
         
         updateHistory(infix: cleanedExpression, result: resultStr, postfix: rpn)
         lastInfixExpression = cleanedExpression
@@ -130,29 +127,9 @@ class CalculatorLogic: CalculatorLogicProtocol {
     
     private func updateHistory(infix infixExp: String, result: String, postfix rpn: [String]) {
         let rpnExpression = rpn.joined(separator: " ")
-        let entry = HistoryEntry(infixExpression: infixExp, rpnExpression: rpnExpression, result: result)
-        history.append(entry)
-        saveHistory()
+        let model: HistoryEntry = .init(id: UUID().uuidString, infixExpression: infixExp, rpnExpression: rpnExpression, result: result)
+        userDefaultsManager.addHistory(model)
     }
-    
-    func saveHistory() {
-        do {
-            let encoder = JSONEncoder()
-            let data = try encoder.encode(history)
-            UserDefaults.standard.set(data, forKey: historyKey)
-        } catch {
-            print("\(error)")
-        }
-    }
-    
-    func loadHistory() {
-        guard let data = UserDefaults.standard.data(forKey: historyKey) else { return }
-        do {
-            let decoder = JSONDecoder()
-            history = try decoder.decode([HistoryEntry].self, from: data)
-        } catch {
-            print("\(error)")
-        }
-    }
+
     
 }
